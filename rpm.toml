@@ -1,0 +1,100 @@
+[general]
+sta = "VALT"
+net= "II"
+loc= "25"
+
+[winmain]
+LBL220vac = "220 VAC"
+LBL110vac = "110 VAC"
+LBLCpu1 = "Pri CPU 12 VDC"
+LBLCpu2 = "Sec CPU 12 VDC"
+LBLLoadvolt = "Load Voltage"
+LBLLoadamp = "Load Current"
+LBLBatvolt = "Batt Voltage"
+LBLBatamp = "Batt Current"
+LBLPwrsup = "Power Supply"
+LBLBatcha = "Batt Charger"
+LBLTyctmp = "Tycon Temp"
+LBLBattmp = "Batt Temp"
+LBLRackamp = "Rack Current"
+LBLVaultamp = "Vault Current"
+LBLAuxamp = "Aux Current"
+
+#; [OIDs]
+#; product_name = "enterprises.45621.2.1.1.0"
+#; product_version = "enterprises.45621.2.1.2.0"
+#; product_builddate = "enterprises.45621.2.1.3.0"
+#; relays = ["enterprises.45621.2.2.1.0", "enterprises.45621.2.2.2.0", "enterprises.45621.2.2.3.0", "enterprises.45621.2.2.4.0"]
+#; voltages = ["enterprises.45621.2.2.5.0", "enterprises.45621.2.2.6.0", "enterprises.45621.2.2.7.0", "enterprises.45621.2.2.8.0"]
+#; currents = ["enterprises.45621.2.2.9.0", "enterprises.45621.2.2.10.0", "enterprises.45621.2.2.11.0", "enterprises.45621.2.2.12.0"]
+#; temperatures = ["enterprises.45621.2.2.13.0", "enterprises.45621.2.2.14.0"]
+
+
+# RELAYS
+[relay1]
+chancode = "RL1"
+label = "CPU1"
+function = "12V PWR to CPU-1"
+cycletime = 10
+
+[relay2]
+chancode = "RL2"
+label = "CPU2"
+function = "12V PWR to CPU-2"
+cycletime=10
+
+[relay3]
+chancode = "RL3"
+label = "VAULT"
+function = "48VDC Output Power"
+cycletime=60
+
+[relay4]
+chancode = "RL4"
+label = "BATTERY"
+function = "Charger output <56V"
+cycletime=3600
+
+# VOLTAGES
+[voltage1]
+chancode = "MV1"
+label = "Voltage 1"
+
+[voltage2]
+chancode = "MV2"
+label = "Voltag"
+
+[voltage3]
+chancode = "MV3"
+label = "Voltage 3"
+
+[voltage4]
+chancode = "MV4"
+label = "Voltage 4"
+
+# CURRENTS
+[current1]
+chancode = "MC1"
+label = "Current 1"
+
+[current2]
+chancode = "MC2"
+label = "Current 2"
+
+[current3]
+chancode = "MC3"
+label = "Current 3"
+
+[current4]
+chancode = "MC4"
+label = "Current 4"
+
+# TEMPS
+[tempexternal]
+chancode = "TPE"
+label = "External temperature"
+
+[tempinternal]
+chancode = "TPI"
+label = "Internal temperature"
+

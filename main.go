@@ -15,8 +15,18 @@ limitations under the License.
 */
 package main
 
-import "rpm/cmd"
+import (
+	"log"
+	"log/syslog"
+	"rpm/cmd"
+)
 
 func main() {
+	slog, err := syslog.Dial("udp4", "localhost:514", syslog.LOG_INFO|syslog.LOG_LOCAL0, "rpm")
+	defer slog.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	slog.Info("Yo, this is a log message from DFA")
 	cmd.Execute()
 }
