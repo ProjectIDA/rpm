@@ -1,6 +1,9 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 // Config interface for RPM
 type Config interface {
@@ -14,9 +17,26 @@ func NewConfig() *RPMConfig {
 
 // RPMConfig hold the RPM configuration structure
 type RPMConfig struct {
+	General generalConfig
+	WinMain winMainConfig
+	Oids    TyconOids
+	// test2   relay
+	// Oiddetails oidDetails
+	// Relay1       relay
+	// Relay2       relay
+	// Relay3       relay
+	// Relay4       relay
+	// Voltage1     voltage
+	// Voltage2     voltage
+	// Voltage3     voltage
+	// Voltage4     voltage
+	// Current1     current
+	// Current2     current
+	// Current3     current
+	// Current4     current
+	// Tempexternal temp
+	// Tempinternal temp
 	CfgFile string
-	general generalConfig
-	winMain winMainConfig
 }
 
 // GeneralConfig top lebel config settings
@@ -45,6 +65,25 @@ type winMainConfig struct {
 	LBLAuxamp   string
 }
 
+// TyconOids wraps the info for different categrories of Oids
+type TyconOids struct {
+	Static   []OidInfo
+	Tests    []OidInfo
+	Relays   []OidInfo
+	Voltages []OidInfo
+	Currents []OidInfo
+	Temps    []OidInfo
+}
+
+// OidInfo holds detailed info for each Oid endpoint
+type OidInfo struct {
+	Oid       string
+	Chancode  string
+	Label     string
+	Function  string
+	Cycletime int
+}
+
 // OIDsConfig OIDs
 // type OIDsConfig struct {
 // 	ProductName      string
@@ -56,10 +95,26 @@ type winMainConfig struct {
 // 	Temperatures     [4]string
 // }
 
-// NewRpmCfg return zero'd struct for holding RPM config file information
-func NewRpmCfg() *RPMConfig {
-	return &RPMConfig{"", generalConfig{"DFA", "NN", "LL"}, winMainConfig{}}
+// DataOids provides list of list of Data Oids
+func (toids *TyconOids) DataOids() *[][]OidInfo {
+	return &[][]OidInfo{
+		toids.Static,
+		toids.Relays,
+		toids.Voltages,
+		toids.Currents,
+		toids.Temps,
+	}
 }
+
+// // NewRpmCfg return zero'd struct for holding RPM config file information
+// func NewRpmCfg() *RPMConfig {
+// 	return &RPMConfig{
+// 		generalConfig{},
+// 		winMainConfig{},
+// 		TyconOids{},
+// 		"",
+// 	}
+// }
 
 // Validate the rpm TOML config file
 func (cfg RPMConfig) Validate() (e error) {
@@ -67,11 +122,52 @@ func (cfg RPMConfig) Validate() (e error) {
 }
 
 // DumpCfg writes config to string for printing/saving
-func DumpCfg(cfg *RPMConfig) string {
-	cfgStr := fmt.Sprintln("General Config:")
-	cfgStr += fmt.Sprintln("  Net: ", cfg.general.Net)
-	cfgStr += fmt.Sprintln("  Sta: ", cfg.general.Sta)
-	cfgStr += fmt.Sprintln("  Loc: ", cfg.general.Loc)
+func (cfg *RPMConfig) DumpCfg(writer io.Writer) {
 
-	return cfgStr
+	fmt.Fprintf(writer, "%v\n", *&cfg.General)
+	fmt.Fprintf(writer, "%v\n", *&cfg.WinMain)
+	listlist := [][]OidInfo{*&cfg.Oids.Static, *&cfg.Oids.Relays, *&cfg.Oids.Voltages, *&cfg.Oids.Currents, *&cfg.Oids.Temps}
+	for _, list := range listlist {
+		for _, detail := range list {
+			fmt.Fprintf(writer, "%v\n", detail)
+		}
+	}
+	return
+}
+
+// DataOidsInfo is a convenience func to generate an ordered list of OIDS that have real data for polling/querying
+func (cfg *RPMConfig) DataOidsInfo() ([]string, []OidInfo) {
+
+	cnt := len(cfg.Oids.Voltages) + len(cfg.Oids.Currents) + len(cfg.Oids.Temps)
+
+	oidInfo := make([]OidInfo, 0, cnt)
+	oidInfo = append(oidInfo, cfg.Oids.Currents...)
+	oidInfo = append(oidInfo, cfg.Oids.Voltages...)
+	oidInfo = append(oidInfo, cfg.Oids.Relays...)
+	oidInfo = append(oidInfo, cfg.Oids.Temps...)
+
+	oids := make([]string, 0, cnt)
+	for _, oidinfo := range oidInfo {
+		oids = append(oids, oidinfo.Oid)
+	}
+
+	return oids, oidInfo
+
+}
+
+// StaticOidsInfo is a convenience func to generate an ordered list of OIDS that have device static values
+func (cfg *RPMConfig) StaticOidsInfo() ([]string, []OidInfo) {
+
+	cnt := len(cfg.Oids.Static)
+
+	oidInfo := make([]OidInfo, 0, cnt)
+	oidInfo = append(oidInfo, cfg.Oids.Static...)
+
+	oids := make([]string, 0, cnt)
+	for _, oidinfo := range oidInfo {
+		oids = append(oids, oidinfo.Oid)
+	}
+
+	return oids, oidInfo
+
 }

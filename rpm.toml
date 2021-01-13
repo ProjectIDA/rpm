@@ -4,6 +4,7 @@ net= "II"
 loc= "25"
 
 [winmain]
+# subject to change
 LBL220vac = "220 VAC"
 LBL110vac = "110 VAC"
 LBLCpu1 = "Pri CPU 12 VDC"
@@ -20,81 +21,37 @@ LBLRackamp = "Rack Current"
 LBLVaultamp = "Vault Current"
 LBLAuxamp = "Aux Current"
 
-#; [OIDs]
-#; product_name = "enterprises.45621.2.1.1.0"
-#; product_version = "enterprises.45621.2.1.2.0"
-#; product_builddate = "enterprises.45621.2.1.3.0"
-#; relays = ["enterprises.45621.2.2.1.0", "enterprises.45621.2.2.2.0", "enterprises.45621.2.2.3.0", "enterprises.45621.2.2.4.0"]
-#; voltages = ["enterprises.45621.2.2.5.0", "enterprises.45621.2.2.6.0", "enterprises.45621.2.2.7.0", "enterprises.45621.2.2.8.0"]
-#; currents = ["enterprises.45621.2.2.9.0", "enterprises.45621.2.2.10.0", "enterprises.45621.2.2.11.0", "enterprises.45621.2.2.12.0"]
-#; temperatures = ["enterprises.45621.2.2.13.0", "enterprises.45621.2.2.14.0"]
+[oids]
 
+static = [
+    { oid = "1.3.6.1.4.1.45621.2.1.1.0", chancode = "", label = "Product Name", function = "", cycletime = 0 },
+    { oid = "1.3.6.1.4.1.45621.2.1.2.0", chancode = "", label = "Product FW Ver", function = "", cycletime = 0 },
+    { oid = "1.3.6.1.4.1.45621.2.1.3.0", chancode = "", label = "Product FW Date", function = "", cycletime = 0 },
+    ]
 
-# RELAYS
-[relay1]
-chancode = "RL1"
-label = "CPU1"
-function = "12V PWR to CPU-1"
-cycletime = 10
-
-[relay2]
-chancode = "RL2"
-label = "CPU2"
-function = "12V PWR to CPU-2"
-cycletime=10
-
-[relay3]
-chancode = "RL3"
-label = "VAULT"
-function = "48VDC Output Power"
-cycletime=60
-
-[relay4]
-chancode = "RL4"
-label = "BATTERY"
-function = "Charger output <56V"
-cycletime=3600
-
-# VOLTAGES
-[voltage1]
-chancode = "MV1"
-label = "Voltage 1"
-
-[voltage2]
-chancode = "MV2"
-label = "Voltag"
-
-[voltage3]
-chancode = "MV3"
-label = "Voltage 3"
-
-[voltage4]
-chancode = "MV4"
-label = "Voltage 4"
-
-# CURRENTS
-[current1]
-chancode = "MC1"
-label = "Current 1"
-
-[current2]
-chancode = "MC2"
-label = "Current 2"
-
-[current3]
-chancode = "MC3"
-label = "Current 3"
-
-[current4]
-chancode = "MC4"
-label = "Current 4"
-
-# TEMPS
-[tempexternal]
-chancode = "TPE"
-label = "External temperature"
-
-[tempinternal]
-chancode = "TPI"
-label = "Internal temperature"
-
+tests = [
+    { oid = "1.3.6.1.2.1.1.3.0", chancode = "TS1", label = "Test OID #1" },
+    { oid = "1.3.6.1.2.1.1.4.0", chancode = "TS2", label = "Test OID #2" },
+]
+relays = [
+    { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "Relay 1 (NYI)", function = "12V PWR to CPU-1", cycletime = 10 },
+    { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "Relay 2 (NYI)", function = "12V PWR to CPU-2", cycletime = 10 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3 (NYI)", function = "48VDC Output Power", cycletime = 60 },
+    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4 (NYI)", function = "Charger output <56V", cycletime = 3600 },
+]
+voltages = [
+    { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Voltage 1", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.6.0", chancode = "MV2", label = "Voltage 2", function = "", cycletime = 30 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.7.0", chancode = "MV3", label = "Voltage 3", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.8.0", chancode = "MV4", label = "Voltage 4", function = "", cycletime = 30 },
+]
+currents = [
+    { oid = "1.3.6.1.4.1.45621.2.2.9.0",  chancode = "MC1", label = "Current 1", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.10.0", chancode = "MC2", label = "Current 2", function = "", cycletime = 30 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.11.0", chancode = "MC3", label = "Current 3", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.12.0", chancode = "MC4", label = "Current 4", function = "", cycletime = 30 },
+]
+temps = [
+    { oid = "1.3.6.1.4.1.45621.2.2.13.0", chancode = "TPE", label = "Temp (Int)", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.14.0", chancode = "TPI", label = "Temp (Ext)", function = "", cycletime = 30 }, 
+]

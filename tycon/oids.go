@@ -21,25 +21,56 @@ const (
 	oidCurrent4     string = "enterprises.45621.2.2.12.0"
 	oidTemperature1 string = "enterprises.45621.2.2.13.0"
 	oidTemperature2 string = "enterprises.45621.2.2.14.0"
+
+	testOid1 string = "1.3.6.1.2.1.1.3.0"
+	testOid2 string = "1.3.6.1.2.1.1.4.0"
 )
 
-func (tp *TPDin2Device) staticOids() *[]string {
+var (
+	relayOids   = []string{oidRelay1, oidRelay2, oidRelay3, oidRelay4}
+	voltageOids = []string{oidVoltage1, oidVoltage2, oidVoltage3, oidVoltage4}
+	currentOids = []string{oidCurrent1, oidCurrent2, oidCurrent3, oidCurrent4}
+	tempOids    = []string{oidTemperature1, oidTemperature2}
+	testOids    = []string{testOid1, testOid2}
+
+	deviceOids []string
+	dataOids   []string
+)
+
+func init() {
+	dataOids = []string{}
+	dataOids = append(dataOids, relayOids...)
+	dataOids = append(dataOids, voltageOids...)
+	dataOids = append(dataOids, currentOids...)
+	dataOids = append(dataOids, tempOids...)
+
+	dataOids = testOids
+
+	deviceOids = []string{
+		oidProductNameOID,
+		oidProductBuildDateOID,
+		oidProductVersionOID,
+	}
+
+}
+
+func staticOids() *[]string {
 	return &[]string{
 		oidProductNameOID,
 		oidProductBuildDateOID,
 		oidProductVersionOID}
 }
 
-func (tp *TPDin2Device) dynamicOids() *[]string {
+func dynamicOids() *[]string {
 	dynoids := []string{}
-	dynoids = append(dynoids, *tp.getRelayOids()...)
-	dynoids = append(dynoids, *tp.getVoltageOids()...)
-	dynoids = append(dynoids, *tp.getCurrentOids()...)
-	dynoids = append(dynoids, *tp.getTemperatureOids()...)
+	dynoids = append(dynoids, *getRelayOids()...)
+	dynoids = append(dynoids, *getVoltageOids()...)
+	dynoids = append(dynoids, *getCurrentOids()...)
+	dynoids = append(dynoids, *getTemperatureOids()...)
 	return &dynoids
 }
 
-func (tp *TPDin2Device) getRelayOids() *[]string {
+func getRelayOids() *[]string {
 	return &[]string{
 		oidRelay1,
 		oidRelay2,
@@ -48,7 +79,7 @@ func (tp *TPDin2Device) getRelayOids() *[]string {
 	}
 }
 
-func (tp *TPDin2Device) getVoltageOids() *[]string {
+func getVoltageOids() *[]string {
 	return &[]string{
 		oidVoltage1,
 		oidVoltage2,
@@ -57,7 +88,7 @@ func (tp *TPDin2Device) getVoltageOids() *[]string {
 	}
 }
 
-func (tp *TPDin2Device) getCurrentOids() *[]string {
+func getCurrentOids() *[]string {
 	return &[]string{
 		oidCurrent1,
 		oidCurrent2,
@@ -66,9 +97,16 @@ func (tp *TPDin2Device) getCurrentOids() *[]string {
 	}
 }
 
-func (tp *TPDin2Device) getTemperatureOids() *[]string {
+func getTemperatureOids() *[]string {
 	return &[]string{
 		oidTemperature1,
 		oidTemperature2,
+	}
+}
+
+func getTestOids() *[]string {
+	return &[]string{
+		testOid1,
+		testOid2,
 	}
 }

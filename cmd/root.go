@@ -19,10 +19,12 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log/syslog"
 	"os"
 	"path/filepath"
 
 	"rpm/config"
+	rlog "rpm/log"
 
 	"github.com/spf13/cobra"
 
@@ -30,39 +32,39 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-var host string
-var rpmCfg *config.RPMConfig
+var (
+	cfgFile string
+	debug   bool
+	host    string
+	rpmCfg  *config.RPMConfig
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "rpm",
-	Short: "IDA Remote Power Monitor (RPM)",
-	Long: `The IDA Remote Power Monitor (RPM) polls the 
+	// rootCmd represents the base command when called without any subcommands
+	rootCmd = &cobra.Command{
+		Use:   "rpm",
+		Short: "IDA Remote Power Monitor (RPM)",
+		Long: `The IDA Remote Power Monitor (RPM) polls the 
 Tycon TPDin2-Web power monitor using the SNMP protocol for 
 real-time power metrics. It polls the user specified teraget device
 at the specified time interval (in seconds).
    The details of which mettrics are queried are controlled by a 
 configuration file which is assumed to be located at $NRTS_HOME or
 can be specified on the command line.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
-	Args: func(cmd *cobra.Command, args []string) error {
+		// Uncomment the following line if your bare application
+		// has an action associated with it:
+		//	Run: func(cmd *cobra.Command, args []string) { },
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 2 {
+				return errors.New("wrong number of commandline parameters")
+			}
+			return nil
 
-		// fmt.Printf("root func with args: %v\n", args)
-		if len(args) != 2 {
-			return errors.New("wrong number of commandline parameters")
-		}
-		return nil
-
-	},
-}
+		},
+	}
+)
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	// fmt.Println("executing root")
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -77,6 +79,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.rpm.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "log debug messages")
 	// rootCmd.PersistentFlags().StringVar(&host, "host", "", "target SNMP host")
 
 	// Cobra also supports local flags, which will only run
@@ -86,6 +89,11 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+
+	// set debug level, if specified
+	if debug {
+		rlog.SetLogLevel(syslog.LOG_DEBUG)
+	}
 
 	if cfgFile != "" {
 		// Use config file from the flag.
@@ -107,6 +115,7 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
+	viper.NewWithOptions(viper.KeyDelimiter("::"))
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
@@ -114,9 +123,10 @@ func initConfig() {
 	}
 	fmt.Println("Using config file:", viper.ConfigFileUsed())
 
-	rpmCfg = config.NewRpmCfg()
-	rpmCfg.CfgFile = viper.ConfigFileUsed()
+	rpmCfg = config.NewConfig()
+	// rpmCfg = config.NewRpmCfg()
 	viper.Unmarshal(&rpmCfg)
+	rpmCfg.CfgFile = viper.ConfigFileUsed()
 
 	// fmt.Printf("Checking read of config. %v\n", viper.GetStringMapString("OIDs.enterprises.45621.2.2.3.0"))
 	// fmt.Printf("Checking unmarshlled cfg General value: %s\n", rpmcfg.General.Sta)
@@ -125,4 +135,6 @@ func initConfig() {
 	if err := rpmCfg.Validate(); err != nil {
 		fmt.Printf(err.Error())
 	}
+	// rpmCfg.DumpCfg(os.Stdout)
+	// fmt.Println(viper.GetStringSlice("oids.relayOids")[2])
 }

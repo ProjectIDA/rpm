@@ -16,17 +16,34 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/syslog"
+	"os"
+	"path/filepath"
 	"rpm/cmd"
+	rlog "rpm/log"
 )
 
+type ctxKeyType string
+
 func main() {
-	slog, err := syslog.Dial("udp4", "localhost:514", syslog.LOG_INFO|syslog.LOG_LOCAL0, "rpm")
-	defer slog.Close()
+
+	err := rlog.InitLogging("rpm", syslog.LOG_LOCAL0|syslog.LOG_NOTICE)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, "rpm: error creating logger (fprintf)")
+		log.Fatal("rpm: error creating logger (log.fatal)")
 	}
-	slog.Info("Yo, this is a log message from DFA")
+	// slog, err := syslog.New(syslog.LOG_INFO|syslog.LOG_LOCAL0, "rpm")
+	// defer slog.Close()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	abspath, err := filepath.Abs(os.Args[0])
+	if err != nil {
+		rlog.ErrMsg(err.Error())
+		os.Exit(1)
+	}
+	rlog.NoticeMsg(fmt.Sprintf("%s starting up...", abspath))
 	cmd.Execute()
 }
