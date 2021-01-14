@@ -20,7 +20,10 @@ import (
 	"log"
 	"log/syslog"
 	"os"
-	"path/filepath"
+    "os/user"
+    "path/filepath"
+    "strconv"
+    "syscall"
 	"rpm/cmd"
 	rlog "rpm/log"
 )
@@ -29,21 +32,37 @@ type ctxKeyType string
 
 func main() {
 
-	err := rlog.InitLogging("rpm", syslog.LOG_LOCAL0|syslog.LOG_NOTICE)
+    var err error
+
+	err = rlog.InitLogging("rpm", syslog.LOG_LOCAL0|syslog.LOG_NOTICE)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "rpm: error creating logger (fprintf)")
 		log.Fatal("rpm: error creating logger (log.fatal)")
 	}
-	// slog, err := syslog.New(syslog.LOG_INFO|syslog.LOG_LOCAL0, "rpm")
-	// defer slog.Close()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+
 	abspath, err := filepath.Abs(os.Args[0])
 	if err != nil {
 		rlog.ErrMsg(err.Error())
 		os.Exit(1)
 	}
 	rlog.NoticeMsg(fmt.Sprintf("%s starting up...", abspath))
+
+
+    var uid, gid int
+    nrtsuser, err := user.Lookup("nrts")
+    if uid, err = strconv.Atoi(nrtsuser.Uid); err != nil {
+        log.Fatal("ERROR converting UID to Int")
+    }
+    if gid, err = strconv.Atoi(nrtsuser.Gid); err != nil {
+        log.Fatal("ERROR converting GID to Int")
+    }
+    syscall.Setuid(uid)
+    syscall.Setgid(gid)
+    os.Chdir(nrtsuser.HomeDir)
+
+    var wd string
+    wd, err = os.Getwd()
+    rlog.NoticeMsg(fmt.Sprintf("working in: %s", wd))
+
 	cmd.Execute()
 }
