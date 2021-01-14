@@ -21,3 +21,8 @@ go get
 go build
 cp rpm/toml ~/etc
 Edit rpm.toml with correct station code
+
+### TODO
+better log msgs on signals and on shutdown
+set user to nrts
+static OID log msgs should come before "first packet received" msg
