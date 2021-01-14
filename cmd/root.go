@@ -21,14 +21,13 @@ import (
 	"fmt"
 	"log/syslog"
 	"os"
+	"os/user"
 	"path/filepath"
 
 	"rpm/config"
 	rlog "rpm/log"
 
 	"github.com/spf13/cobra"
-
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
@@ -99,15 +98,18 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
+
+        // get user nrts home dir
 		// Find home directory.
-		home, err := homedir.Dir()
+		user, err := user.Lookup("nrts")
 		if err != nil {
-			fmt.Println(err)
+			rlog.ErrMsg(err.Error())
 			os.Exit(1)
 		}
+        rlog.NoticeMsg(fmt.Sprintf("homedir: %s", user.HomeDir))
 
 		// Search config in home directory with name ".rpm" (without extension).
-		cfgDir := filepath.Join(home, "/etc")
+		cfgDir := filepath.Join(user.HomeDir, "/etc")
 		viper.AddConfigPath(cfgDir)
 		viper.AddConfigPath(".")
 		viper.SetConfigName("rpm")
@@ -115,16 +117,14 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-	viper.NewWithOptions(viper.KeyDelimiter("::"))
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Using config file:", viper.ConfigFileUsed())
+	rlog.NoticeMsg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 
 	rpmCfg = config.NewConfig()
-	// rpmCfg = config.NewRpmCfg()
 	viper.Unmarshal(&rpmCfg)
 	rpmCfg.CfgFile = viper.ConfigFileUsed()
 
