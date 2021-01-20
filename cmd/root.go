@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log/syslog"
 	"os"
+	"os/signal"
 	"os/user"
 	"path/filepath"
 
@@ -99,14 +100,14 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 
-        // get user nrts home dir
+		// get user nrts home dir
 		// Find home directory.
 		user, err := user.Lookup("nrts")
 		if err != nil {
 			rlog.ErrMsg(err.Error())
 			os.Exit(1)
 		}
-        rlog.NoticeMsg(fmt.Sprintf("homedir: %s", user.HomeDir))
+		rlog.NoticeMsg(fmt.Sprintf("homedir: %s", user.HomeDir))
 
 		// Search config in home directory with name ".rpm" (without extension).
 		cfgDir := filepath.Join(user.HomeDir, "/etc")
@@ -135,6 +136,21 @@ func initConfig() {
 	if err := rpmCfg.Validate(); err != nil {
 		fmt.Printf(err.Error())
 	}
-	// rpmCfg.DumpCfg(os.Stdout)
-	// fmt.Println(viper.GetStringSlice("oids.relayOids")[2])
+}
+
+// SetupSignals to trap for external kill signals
+func setupSignals(sigs ...os.Signal) chan bool {
+
+	sigchan := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+
+	signal.Notify(sigchan, sigs...)
+
+	go func() {
+		sig := <-sigchan
+		fmt.Println(sig)
+		done <- true
+	}()
+
+	return done
 }
