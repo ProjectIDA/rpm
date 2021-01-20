@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"rpm/config"
 	rlog "rpm/log"
 	"strconv"
 	"sync"
@@ -38,15 +37,14 @@ const (
 type TPDin2Device struct {
 	host             string
 	port             uint64
-	cfg              config.RPMConfig
 	oidList          []string
 	ready            bool
 	internalInterval time.Duration
 	SNMPParams       *g.GoSNMP
 	ctx              *context.Context
 	mutex            sync.Mutex
-	SampleInterval   time.Duration
-	CurrentScan      *TPDin2Scan
+	// SampleInterval   time.Duration
+	CurrentScan *TPDin2Scan
 }
 
 // TPDin2Scan holds query results with timestamp
@@ -69,14 +67,6 @@ func (scan *TPDin2Scan) copy() *TPDin2Scan {
 
 	return &newscan
 }
-
-// func (scan *TPDin2Scan) String() string {
-// 	parts := make([]string, OID_COUNT)
-// 	for _, val := range scan.Data {
-// 		prts += fmt.Sprintf("%v:", val)
-// 	}
-// 	return str
-// }
 
 // NewTPDin2 constructor
 func NewTPDin2() *TPDin2Device {
@@ -103,34 +93,16 @@ func (tp *TPDin2Device) Initialize(hostport string, sampleInterval time.Duration
 		return e
 	}
 
-	// check port is numeric: 1 < port < 2^16-1
-
-	if (sampleInterval < MinSampleInterval) || (sampleInterval > MaxSampleInterval) {
-		return fmt.Errorf(
-			"invalid sample interval, must be a whole nuber of seconds between %.0f and %.0f",
-			MinSampleInterval.Seconds(),
-			MaxSampleInterval.Seconds())
-	}
-
-	// if cfg == nil {
-	// 	return errors.New("cfg must not be nil")
-	// }
-	// if err := cfg.Validate(); err != nil {
-	// 	return err
-	// }
-
 	tp.host = host
 	tp.port = portInt
-	tp.SampleInterval = sampleInterval
-	tp.internalInterval = tp.SampleInterval / 2
+	// tp.SampleInterval = sampleInterval
+	tp.internalInterval = sampleInterval / 3.0
 	tp.oidList = oids
-	// tp.cfg = *cfg
 	tp.ready = false
 	tp.SNMPParams = nil
 
 	rlog.DebugMsg("debug: tp.host:             %s", tp.host)
 	rlog.DebugMsg("debug: tp.port:             %d", tp.port)
-	rlog.DebugMsg("debug: tp.SampleInterval:   %s", tp.SampleInterval)
 	rlog.DebugMsg("debug: tp.internalInterval: %s", tp.internalInterval)
 
 	return nil
@@ -149,7 +121,6 @@ func (tp *TPDin2Device) Connect() error {
 			Version:   g.Version2c,
 			Retries:   0,
 			Timeout:   time.Duration(10) * time.Second,
-			// Logger:    log.New(os.Stdout, "", 0),
 		}
 
 		if err := snmpParams.Connect(); err != nil {
@@ -173,7 +144,7 @@ func (tp *TPDin2Device) queryDeviceVars() error {
 
 	// var oidList *[]string
 	snmpVals, err := tp.SNMPParams.Get(tp.oidList)
-	ts := time.Now().Round(tp.SampleInterval)
+	ts := time.Now() // .Round(tp.SampleInterval)
 	if err != nil {
 		return err
 	}
