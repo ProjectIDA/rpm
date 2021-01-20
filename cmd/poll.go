@@ -26,8 +26,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
 	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
@@ -77,30 +75,13 @@ func checkArgs(cmd *cobra.Command, args []string) error {
 			val,
 			tycon.MinSampleInterval.Seconds(),
 			tycon.MaxSampleInterval.Seconds()))
-		return fmt.Errorf("invalid sample interval %.2g must be between %.0f and %.0f seconds",
+		return fmt.Errorf("invalid sample interval %f must be between %.0f and %.0f seconds",
 			val,
 			tycon.MinSampleInterval.Seconds(),
 			tycon.MaxSampleInterval.Seconds())
 	}
 
 	return nil
-}
-
-// SetupSignals to trap for external kill signals
-func SetupSignals(sigs ...os.Signal) chan bool {
-
-	sigchan := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-
-	signal.Notify(sigchan, sigs...)
-
-	go func() {
-		sig := <-sigchan
-		fmt.Println(sig)
-		done <- true
-	}()
-
-	return done
 }
 
 func formatScan(sampleInterval time.Duration, cfg *config.RPMConfig, scan *tycon.TPDin2Scan) string {
@@ -131,6 +112,25 @@ func formatScan(sampleInterval time.Duration, cfg *config.RPMConfig, scan *tycon
 
 }
 
+// initialize OID vars
+func initOids(c *config.RPMConfig) {
+
+	// from the config collect dataoids to be polled
+	dataOids, dataOidInfo = c.DataOidsInfo()
+	staticOids, staticOidInfo = c.StaticOidsInfo()
+	allOids = append(staticOids, dataOids...)
+	allOidInfo = append(staticOidInfo, dataOidInfo...)
+
+}
+
+func logDeviceInfo(scan *tycon.TPDin2Scan) {
+
+	for _, oidinfo := range staticOidInfo {
+		rlog.NoticeMsg("%s: %s", oidinfo.Label, scan.Data[oidinfo.Oid])
+	}
+
+}
+
 func poll(cmd *cobra.Command, args []string) {
 	// snmpwalk -On -c readwrite -M /usr/local/share/snmp/mibs -v 1 localhost
 
@@ -138,39 +138,33 @@ func poll(cmd *cobra.Command, args []string) {
 
 	hostport := args[0]
 	fInterval, _ := strconv.ParseFloat(args[1], 32)
-
-	tp2din := tycon.NewTPDin2()
-
 	dInterval := time.Duration(fInterval) * time.Second
 	hInterval := dInterval / 2
-	rlog.NoticeMsg(fmt.Sprintf("Host: %s; interval: %.2f (secs)\n", hostport, fInterval))
 
-	// from the config collect dataoids to be polled
-	dataOids, dataOidInfo = rpmCfg.DataOidsInfo()
-	staticOids, staticOidInfo = rpmCfg.StaticOidsInfo()
-	allOids = append(staticOids, dataOids...)
-	allOidInfo = append(staticOidInfo, dataOidInfo...)
+	rlog.NoticeMsg(fmt.Sprintf("Host: %s; interval: %.0f sec(s)\n", hostport, fInterval))
 
+	initOids(rpmCfg)
+	sigdone := setupSignals(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+
+	tp2din := tycon.NewTPDin2()
 	err := tp2din.Initialize(hostport, dInterval, allOids)
 	if err != nil {
+		rlog.ErrMsg("unknown error initializing tp2din... quitting")
 		log.Fatalln(err)
 	}
-
 	err = tp2din.Connect()
 	if err != nil {
-		rlog.CritMsg("could not connect to %s", hostport)
-		log.Fatal(fmt.Errorf("could not connect to %s", hostport))
+		rlog.CritMsg("could not connect to %s... quitting.", hostport)
+		log.Fatalln(fmt.Errorf("could not connect to %s... quitting", hostport))
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
-	sigdone := SetupSignals(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
-
 	ctx, cancel := context.WithCancel(context.Background())
-
 	var wg sync.WaitGroup
 
 	err = tp2din.PollStart(ctx, &wg)
 	if err != nil {
+		rlog.ErrMsg("could not start internal polling loop... quitting")
 		cancel()
 		wg.Wait()
 		log.Fatal(err)
@@ -184,15 +178,10 @@ func poll(cmd *cobra.Command, args []string) {
 	first := true
 	missedScan := false
 	exiting := false
+
 	for !exiting {
 
 		targetTime = targetTime.Add(dInterval)
-
-		// In case loop iteration took more the 1 time interval
-		for targetTime.Before(time.Now()) {
-			rlog.WarningMsg("target lags by 1 interval")
-			targetTime = targetTime.Add(dInterval)
-		}
 		rlog.DebugMsg("next target time: %v\n", targetTime.String())
 
 		select {
@@ -211,9 +200,7 @@ func poll(cmd *cobra.Command, args []string) {
 
 			if first {
 				rlog.NoticeMsg("initial rpm scan received")
-				for _, oidinfo := range staticOidInfo {
-					rlog.NoticeMsg("%s: %s", oidinfo.Label, scan.Data[oidinfo.Oid])
-				}
+				logDeviceInfo(scan)
 				first = false
 			}
 			missedScan = false
@@ -224,14 +211,17 @@ func poll(cmd *cobra.Command, args []string) {
 			continue
 		}
 
+		// calcualte offset of scan time from target time.
+		// positive offset means scan time is after target time
 		offset = scan.TS.Sub(targetTime)
 
 		// see if scan should go with next second, perhaps due to network lag
+
 		if (offset > hInterval) && (offset < (dInterval + hInterval)) {
 			rlog.NoticeMsg("warning: delayed scan. Skipping one interval")
-			targetTime = scan.TS.Round(tp2din.SampleInterval) //targetTime.Add(dInterval)
+			targetTime = scan.TS.Round(dInterval) //targetTime.Add(dInterval)
 		} else if offset < -hInterval {
-			rlog.ErrMsg("error: unexpected timestamp: %v; target time: %v; dropping scan\n", scan.TS, targetTime)
+			rlog.ErrMsg("error: unexpected or duplicate timestamp: %v; target time: %v; dropping scan\n", scan.TS, targetTime)
 			first = true
 			continue
 		}
