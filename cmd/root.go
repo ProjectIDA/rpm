@@ -100,9 +100,9 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 
-		// get user nrts home dir
+		// get user home dir
 		// Find home directory.
-		user, err := user.Lookup("nrts")
+		user, err := user.Current()
 		if err != nil {
 			rlog.ErrMsg(err.Error())
 			os.Exit(1)
