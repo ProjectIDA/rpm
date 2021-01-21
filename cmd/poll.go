@@ -254,9 +254,3 @@ func init() {
 	// is called directly, e.g.:
 	// pollCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-// TargetDevice returns the target device to poll in host:port format
-func TargetDevice() (host string, err error) {
-
-	return "", nil
-}
