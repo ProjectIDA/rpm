@@ -171,12 +171,13 @@ func poll(cmd *cobra.Command, args []string) {
 	}
 	rlog.NoticeMsg("internal polling loop spawned")
 
-	var scan *tycon.TPDin2Scan
+	var scan, prevScan *tycon.TPDin2Scan
 	targetTime := time.Now().Round(dInterval).Add(dInterval)
 
 	var offset time.Duration
 	first := true
-	missedScan := false
+	scanMissed := false
+	scanRepeated := false
 	exiting := false
 
 	for !exiting {
@@ -188,14 +189,20 @@ func poll(cmd *cobra.Command, args []string) {
 
 		case <-time.After(time.Until(targetTime)):
 
+			prevScan = scan
 			scan, err = tp2din.GetScan()
 			if scan == nil {
-				if !missedScan {
+				if !scanMissed {
 					rlog.ErrMsg("no rpm scan available\n")
 				}
-				missedScan = true
+				scanMissed = true
 				first = true
 				continue
+			}
+
+			rlog.DebugMsg("Scan time:   %s", scan.TS.String())
+			for _, oidinfo := range dataOidInfo {
+				rlog.DebugMsg("(%s) %s: %s", oidinfo.Chancode, oidinfo.Oid, scan.Data[oidinfo.Oid])
 			}
 
 			if first {
@@ -203,7 +210,7 @@ func poll(cmd *cobra.Command, args []string) {
 				logDeviceInfo(scan)
 				first = false
 			}
-			missedScan = false
+			scanMissed = false
 
 		case <-sigdone:
 			rlog.DebugMsg("got done signal")
@@ -217,20 +224,30 @@ func poll(cmd *cobra.Command, args []string) {
 
 		// see if scan should go with next second, perhaps due to network lag
 
-		if (offset > hInterval) && (offset < (dInterval + hInterval)) {
-			rlog.NoticeMsg("warning: delayed scan. Skipping one interval")
+		if offset > hInterval {
+			// really should never get here unless this loop is taking more than an interval to complete
+			rlog.WarningMsg("well, this is awkward, a scan from more than 1/2 interval in the future")
+			rlog.WarningMsg("incrementing TargetTime by one interval (to catch up) creating a gap")
 			targetTime = scan.TS.Round(dInterval) //targetTime.Add(dInterval)
-		} else if offset < -hInterval {
-			rlog.ErrMsg("error: unexpected or duplicate timestamp: %v; target time: %v; dropping scan\n", scan.TS, targetTime)
 			first = true
+		} else if offset < -hInterval {
+			// current scan does not appear to be available.
+			rlog.ErrMsg("missing scan: current scan time (%v) not found within 1/2 interval of target (%v)", scan.TS, targetTime)
+
+			// if previous scan not alreadcy repeated, repeat previous scan (if it exists)
+			// and set flag so con only do this one time in a row.
+			if (prevScan != nil) && (!scanRepeated) {
+				rlog.WarningMsg("repeating previous scan value")
+				scanRepeated = true
+				scan = prevScan
+			} else {
+				// missed scan but can't repeat previous, so there will be a gap
+				first = true
+			}
 			continue
 		}
 
-		rlog.DebugMsg("Scan time:   %s", scan.TS.String())
-		for _, oidinfo := range dataOidInfo {
-			rlog.DebugMsg("(%s) %s: %s", oidinfo.Chancode, oidinfo.Oid, scan.Data[oidinfo.Oid])
-		}
-
+		scanRepeated = false
 		// send record to Stdout
 		fmt.Printf("%s\n", formatScan(dInterval, rpmCfg, scan))
 
