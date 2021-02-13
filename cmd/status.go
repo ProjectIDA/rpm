@@ -26,6 +26,7 @@ THE SOFTWARE.
 import (
 	"fmt"
 	"log"
+    "time"
 	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
@@ -90,7 +91,7 @@ func runStatusCmd(args []string) {
 		rlog.ErrMsg("error querying device")
 	}
 
-	fmt.Printf("%v\n\n", ts)
+	fmt.Printf("\n%s\n\n", ts.Format(time.RFC1123))
 
 	for _, group := range [][]config.OidInfo{
 		rpmCfg.Oids.Static,
@@ -100,7 +101,7 @@ func runStatusCmd(args []string) {
 		rpmCfg.Oids.Temps,
 	} {
 		for _, val := range group {
-			fmt.Printf("%s:  %s\n", val.Label, results[val.Oid])
+			fmt.Printf("%15s:  %4s\n", val.Label, results[val.Oid])
 		}
 		fmt.Println()
 	}
