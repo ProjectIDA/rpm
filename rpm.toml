@@ -34,10 +34,10 @@ tests = [
     { oid = "1.3.6.1.2.1.1.4.0", chancode = "TS2", label = "Test OID #2" },
 ]
 relays = [
-    { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "Relay 1 (NYI)", function = "12V PWR to CPU-1", cycletime = 10 },
-    { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "Relay 2 (NYI)", function = "12V PWR to CPU-2", cycletime = 10 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3 (NYI)", function = "48VDC Output Power", cycletime = 60 },
-    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4 (NYI)", function = "Charger output <56V", cycletime = 3600 },
+    { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "Relay 1", function = "12V PWR to CPU-1", cycletime = 10 },
+    { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "Relay 2", function = "12V PWR to CPU-2", cycletime = 10 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3", function = "NYI", cycletime = 60 },
+    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4", function = "NYI", cycletime = 3600 },
 ]
 voltages = [
     { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Voltage 1", function = "", cycletime = 30 },
