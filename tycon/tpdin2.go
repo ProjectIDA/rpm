@@ -139,14 +139,12 @@ func (tp *TPDin2Device) Connect() error {
 
 }
 
-// queryDeviceVars queries device for TPDin2 OID values
-func (tp *TPDin2Device) queryDeviceVars() error {
+// QueryOids to get values for all device oids
+func (tp *TPDin2Device) QueryOids() (time.Time, map[string]string, error) {
 
-	// var oidList *[]string
 	snmpVals, err := tp.SNMPParams.Get(tp.oidList)
-	ts := time.Now() // .Round(tp.SampleInterval)
 	if err != nil {
-		return err
+		return time.Now(), nil, err
 	}
 
 	results := make(map[string]string)
@@ -167,6 +165,18 @@ func (tp *TPDin2Device) queryDeviceVars() error {
 		}
 	}
 
+	ts := time.Now()
+
+	return ts, results, nil
+}
+
+// queryDeviceVars queries device for TPDin2 OID values
+func (tp *TPDin2Device) queryDeviceVars() error {
+
+	ts, results, err := tp.QueryOids()
+	if err != nil {
+		return err
+	}
 	tp.saveScan(ts, &results)
 
 	return nil
