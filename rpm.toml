@@ -34,10 +34,10 @@ tests = [
     { oid = "1.3.6.1.2.1.1.4.0", chancode = "TS2", label = "Test OID #2" },
 ]
 relays = [
-    { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "Relay 1", function = "12V PWR to CPU-1", cycletime = 10 },
-    { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "Relay 2", function = "12V PWR to CPU-2", cycletime = 10 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3", function = "Not Used", cycletime = 60 },
-    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4", function = "Not Used", cycletime = 3600 },
+    { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "12V PWR to Primary", function = "12V PWR to CPU-1", cycletime = 10 },
+    { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "12V PWR to Secondary", function = "12V PWR to CPU-2", cycletime = 10 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3 (not used)", function = "Not Used", cycletime = 60 },
+    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4 (not used)", function = "Not Used", cycletime = 3600 },
 ]
 voltages = [
     { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Battery O/P Voltage", function = "", cycletime = 30 },
