@@ -28,6 +28,7 @@ import (
 	"log"
 	rlog "rpm/log"
 	"rpm/tycon"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -115,13 +116,16 @@ func runStatusCmd(args []string) {
 	}
 	fmt.Println()
 
+	// var volts float64
 	for _, val := range rpmCfg.Oids.Voltages {
-		fmt.Printf("%40s:  %4s (volts x 10)\n", val.Label, results[val.Oid])
+		volts, _ := strconv.ParseFloat(results[val.Oid], 64)
+		fmt.Printf("%40s:  %4.1f (volts)\n", val.Label, volts/10)
 	}
 	fmt.Println()
 
 	for _, val := range rpmCfg.Oids.Currents {
-		fmt.Printf("%40s:  %4s (amps x 10)\n", val.Label, results[val.Oid])
+		amps, _ := strconv.ParseFloat(results[val.Oid], 64)
+		fmt.Printf("%40s:  %4.1f (amps)\n", val.Label, amps/10)
 	}
 	fmt.Println()
 
