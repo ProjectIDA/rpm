@@ -26,7 +26,6 @@ THE SOFTWARE.
 import (
 	"fmt"
 	"log"
-	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
 	"time"
@@ -93,17 +92,41 @@ func runStatusCmd(args []string) {
 
 	fmt.Printf("\n%s\n\n", ts.Format(time.RFC1123))
 
-	for _, group := range [][]config.OidInfo{
-		rpmCfg.Oids.Static,
-		rpmCfg.Oids.Relays,
-		rpmCfg.Oids.Voltages,
-		rpmCfg.Oids.Currents,
-		rpmCfg.Oids.Temps,
-	} {
-		for _, val := range group {
-			fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
-		}
-		fmt.Println()
+	// for _, group := range [][]config.OidInfo{
+	// 	rpmCfg.Oids.Static,
+	// 	rpmCfg.Oids.Relays,
+	// 	rpmCfg.Oids.Voltages,
+	// 	rpmCfg.Oids.Currents,
+	// 	rpmCfg.Oids.Temps,
+	// } {
+	// 	for _, val := range group {
+	// 		fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
+	// 	}
+	// 	fmt.Println()
+	// }
+
+	for _, val := range rpmCfg.Oids.Static {
+		fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
+	}
+	fmt.Println()
+
+	for _, val := range rpmCfg.Oids.Relays {
+		fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
+	}
+	fmt.Println()
+
+	for _, val := range rpmCfg.Oids.Voltages {
+		fmt.Printf("%40s:  %4s (volts x 10)\n", val.Label, results[val.Oid])
+	}
+	fmt.Println()
+
+	for _, val := range rpmCfg.Oids.Currents {
+		fmt.Printf("%40s:  %4s (amps x 10)\n", val.Label, results[val.Oid])
+	}
+	fmt.Println()
+
+	for _, val := range rpmCfg.Oids.Temps {
+		fmt.Printf("%40s:  %4s (deg celsius x 10)\n", val.Label, results[val.Oid])
 	}
 
 }
