@@ -130,7 +130,8 @@ func runStatusCmd(args []string) {
 	fmt.Println()
 
 	for _, val := range rpmCfg.Oids.Temps {
-		fmt.Printf("%40s:  %4s (deg celsius x 10)\n", val.Label, results[val.Oid])
+		temp, _ := strconv.ParseFloat(results[val.Oid], 64)
+		fmt.Printf("%40s:  %4.1f (celsius)\n", val.Label, temp/10)
 	}
 
 }
