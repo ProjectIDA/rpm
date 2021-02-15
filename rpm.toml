@@ -36,20 +36,20 @@ tests = [
 relays = [
     { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "Relay 1", function = "12V PWR to CPU-1", cycletime = 10 },
     { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "Relay 2", function = "12V PWR to CPU-2", cycletime = 10 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3", function = "NYI", cycletime = 60 },
-    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4", function = "NYI", cycletime = 3600 },
+    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3", function = "Not Used", cycletime = 60 },
+    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4", function = "Not Used", cycletime = 3600 },
 ]
 voltages = [
-    { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Voltage 1", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.6.0", chancode = "MV2", label = "Voltage 2", function = "", cycletime = 30 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.7.0", chancode = "MV3", label = "Voltage 3", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.8.0", chancode = "MV4", label = "Voltage 4", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Battery O/P Voltage", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.6.0", chancode = "MV2", label = "Newmar O/P Voltage", function = "", cycletime = 30 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.7.0", chancode = "MV3", label = "Wilmore O/P Voltage", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.8.0", chancode = "MV4", label = "Topaz AC (0 => 120VAC; 1 => AC off)", function = "", cycletime = 30 },
 ]
 currents = [
-    { oid = "1.3.6.1.4.1.45621.2.2.9.0",  chancode = "MC1", label = "Current 1", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.10.0", chancode = "MC2", label = "Current 2", function = "", cycletime = 30 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.11.0", chancode = "MC3", label = "Current 3", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.12.0", chancode = "MC4", label = "Current 4", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.9.0",  chancode = "MC1", label = "Wilmore O/P Current", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.10.0", chancode = "MC2", label = "Vault O/P Current", function = "", cycletime = 30 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.11.0", chancode = "MC3", label = "Shunt Battery Current", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.12.0", chancode = "MC4", label = "Not Used", function = "", cycletime = 30 },
 ]
 temps = [
     { oid = "1.3.6.1.4.1.45621.2.2.13.0", chancode = "TPE", label = "Temp (Int)", function = "", cycletime = 30 },

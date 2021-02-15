@@ -26,10 +26,10 @@ THE SOFTWARE.
 import (
 	"fmt"
 	"log"
-    "time"
 	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -101,7 +101,7 @@ func runStatusCmd(args []string) {
 		rpmCfg.Oids.Temps,
 	} {
 		for _, val := range group {
-			fmt.Printf("%15s:  %4s\n", val.Label, results[val.Oid])
+			fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
 		}
 		fmt.Println()
 	}
