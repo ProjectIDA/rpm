@@ -92,6 +92,7 @@ func runStatusCmd(args []string) {
 		return
 	}
 
+	fmt.Println()
 	fmt.Printf("%40s:  %s\n", "Host", hostport)
 
 	for _, val := range rpmCfg.Oids.Static {
