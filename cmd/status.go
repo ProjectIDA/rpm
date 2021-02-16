@@ -29,7 +29,6 @@ import (
 	rlog "rpm/log"
 	"rpm/tycon"
 	"strconv"
-	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -76,13 +75,13 @@ func runStatusCmd(args []string) {
 	tp2din := tycon.NewTPDin2()
 	err := tp2din.Initialize(hostport, 0, allOids)
 	if err != nil {
-		rlog.ErrMsg("unknown error initializing tp2din... quitting")
+		rlog.ErrMsg("unknown error initializing structures for %s, quitting", hostport)
 		log.Fatalln(err)
 	}
 	err = tp2din.Connect()
 	if err != nil {
-		rlog.CritMsg("could not connect to %s... quitting.", hostport)
-		log.Fatalln(fmt.Errorf("could not connect to %s... quitting", hostport))
+		rlog.CritMsg("could not connect to %s, quitting.", hostport)
+		log.Fatalln(fmt.Errorf("could not connect to %s, quitting", hostport))
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
@@ -93,11 +92,13 @@ func runStatusCmd(args []string) {
 		return
 	}
 
+	fmt.Printf("%40s:  %s\n", "Host", hostport)
+
 	for _, val := range rpmCfg.Oids.Static {
 		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])
 	}
-	fmt.Printf("%40s:  %s\n", "Host Time", ts.Format(time.RFC1123))
-	fmt.Println()
+	fmt.Printf("%40s:  %s\n", "Time of Query", ts.Format("2006-01-02 15:04:05 MST"))
+	fmt.Println() /// Mon Jan 2 15:04:05 MST 2006
 
 	for _, val := range rpmCfg.Oids.Relays {
 		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])
