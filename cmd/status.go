@@ -100,7 +100,7 @@ func runStatusCmd(args []string) {
 	fmt.Println()
 
 	for _, val := range rpmCfg.Oids.Relays {
-		fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
+		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])
 	}
 	fmt.Println()
 
