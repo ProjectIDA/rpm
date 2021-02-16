@@ -88,27 +88,15 @@ func runStatusCmd(args []string) {
 
 	ts, results, err := tp2din.QueryOids()
 	if err != nil {
-		rlog.ErrMsg("error querying device")
+		fmt.Printf("error querying device %s\n", hostport)
+		rlog.ErrMsg("error querying device %s\n", hostport)
+		return
 	}
-
-	fmt.Printf("\n%s\n\n", ts.Format(time.RFC1123))
-
-	// for _, group := range [][]config.OidInfo{
-	// 	rpmCfg.Oids.Static,
-	// 	rpmCfg.Oids.Relays,
-	// 	rpmCfg.Oids.Voltages,
-	// 	rpmCfg.Oids.Currents,
-	// 	rpmCfg.Oids.Temps,
-	// } {
-	// 	for _, val := range group {
-	// 		fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
-	// 	}
-	// 	fmt.Println()
-	// }
 
 	for _, val := range rpmCfg.Oids.Static {
-		fmt.Printf("%40s:  %4s\n", val.Label, results[val.Oid])
+		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])
 	}
+	fmt.Printf("%40s:  %s\n", "Host Time", ts.Format(time.RFC1123))
 	fmt.Println()
 
 	for _, val := range rpmCfg.Oids.Relays {
@@ -116,7 +104,6 @@ func runStatusCmd(args []string) {
 	}
 	fmt.Println()
 
-	// var volts float64
 	for _, val := range rpmCfg.Oids.Voltages {
 		volts, _ := strconv.ParseFloat(results[val.Oid], 64)
 		fmt.Printf("%40s:  %4.1f (volts)\n", val.Label, volts/10)
