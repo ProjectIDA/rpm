@@ -67,13 +67,14 @@ func runStatusCmd(args []string) {
 	rlog.DebugMsg(fmt.Sprintf("status cmd with args[]: %v\n", args))
 
 	hostport := args[0]
+	host, port := formatSNMPHostPort(hostport)
 
-	rlog.NoticeMsg(fmt.Sprintf("host: %s\n", hostport))
+	rlog.NoticeMsg(fmt.Sprintf("host: %s:%s\n", host, port))
 
 	initOids(rpmCfg)
 
 	tp2din := tycon.NewTPDin2()
-	err := tp2din.Initialize(hostport, 0, allOids)
+	err := tp2din.Initialize(host, port, 0, allOids)
 	if err != nil {
 		rlog.ErrMsg("unknown error initializing structures for %s, quitting", hostport)
 		log.Fatalln(err)
