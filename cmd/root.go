@@ -24,6 +24,7 @@ import (
 	"os/signal"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	"rpm/config"
 	rlog "rpm/log"
@@ -153,4 +154,16 @@ func setupSignals(sigs ...os.Signal) chan bool {
 	}()
 
 	return done
+}
+
+// split host and port, supplying default SNMP port if absent
+func formatSNMPHostPort(rawHost string) (string, string) {
+
+	if strings.Index(rawHost, ":") == -1 {
+		rawHost += ":161"
+	}
+	parts := strings.Split(rawHost, ":")
+
+	return parts[0], parts[1]
+
 }
