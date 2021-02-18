@@ -138,7 +138,7 @@ func (cfg *RPMConfig) DumpCfg(writer io.Writer) {
 // DataOidsInfo is a convenience func to generate an ordered list of OIDS that have real data for polling/querying
 func (cfg *RPMConfig) DataOidsInfo() ([]string, []OidInfo) {
 
-	cnt := len(cfg.Oids.Voltages) + len(cfg.Oids.Currents) + len(cfg.Oids.Temps)
+	cnt := len(cfg.Oids.Voltages) + len(cfg.Oids.Currents) + len(cfg.Oids.Relays) + len(cfg.Oids.Temps)
 
 	oidInfo := make([]OidInfo, 0, cnt)
 	oidInfo = append(oidInfo, cfg.Oids.Currents...)
@@ -162,6 +162,23 @@ func (cfg *RPMConfig) StaticOidsInfo() ([]string, []OidInfo) {
 
 	oidInfo := make([]OidInfo, 0, cnt)
 	oidInfo = append(oidInfo, cfg.Oids.Static...)
+
+	oids := make([]string, 0, cnt)
+	for _, oidinfo := range oidInfo {
+		oids = append(oids, oidinfo.Oid)
+	}
+
+	return oids, oidInfo
+
+}
+
+// RelayOidsInfo is a convenience func to generate an ordered list of Relay OIDS
+func (cfg *RPMConfig) RelayOidsInfo() ([]string, []OidInfo) {
+
+	cnt := len(cfg.Oids.Relays)
+
+	oidInfo := make([]OidInfo, 0, cnt)
+	oidInfo = append(oidInfo, cfg.Oids.Relays...)
 
 	oids := make([]string, 0, cnt)
 	for _, oidinfo := range oidInfo {
