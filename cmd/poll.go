@@ -136,26 +136,26 @@ func poll(cmd *cobra.Command, args []string) {
 
 	rlog.DebugMsg(fmt.Sprintf("poll cmd with args[]: %v\n", args))
 
-	hostport := args[0]
+	host, port := formatSNMPHostPort(args[0])
 	fInterval, _ := strconv.ParseFloat(args[1], 32)
 	dInterval := time.Duration(fInterval) * time.Second
 	hInterval := dInterval / 2
 
-	rlog.NoticeMsg(fmt.Sprintf("Host: %s; interval: %.0f sec(s)\n", hostport, fInterval))
+	rlog.NoticeMsg(fmt.Sprintf("Host: %s:%s; interval: %.0f sec(s)\n", host, port, fInterval))
 
 	initOids(rpmCfg)
 	sigdone := setupSignals(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 
 	tp2din := tycon.NewTPDin2()
-	err := tp2din.Initialize(hostport, dInterval, allOids)
+	err := tp2din.Initialize(host, port, dInterval, allOids)
 	if err != nil {
 		rlog.ErrMsg("unknown error initializing tp2din... quitting")
 		log.Fatalln(err)
 	}
 	err = tp2din.Connect()
 	if err != nil {
-		rlog.CritMsg("could not connect to %s... quitting.", hostport)
-		log.Fatalln(fmt.Errorf("could not connect to %s... quitting", hostport))
+		rlog.CritMsg("could not connect to %s:%s... quitting.", host, port)
+		log.Fatalln(fmt.Errorf("could not connect to %s:%s... quitting", host, port))
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
