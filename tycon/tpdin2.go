@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	rlog "rpm/log"
 	"strconv"
 	"sync"
@@ -32,6 +31,15 @@ const (
 	maxCycleTime int = 99999
 	snmpVersion  int = 2
 )
+
+// // TPDin2Relay is the relay index type
+// type TPDin2Relay int
+
+// // Bounds for Relay Index
+// const (
+// 	MinRelayIndex int = 1
+// 	MaxRelayIndex int = 4
+// )
 
 // TPDin2Device struct object
 type TPDin2Device struct {
@@ -78,18 +86,18 @@ func NewTPDin2() *TPDin2Device {
 }
 
 // Initialize TPDin2 object
-func (tp *TPDin2Device) Initialize(hostport string, sampleInterval time.Duration, oids []string) error {
+func (tp *TPDin2Device) Initialize(host, port string, sampleInterval time.Duration, oids []string) error {
 
-	var host, portstr string
+	// var host, portstr string
 	var portInt uint64
 	var e error
 
-	host, portstr, e = net.SplitHostPort(hostport)
-	if e != nil {
-		return e
-	}
+	// host, portstr, e = net.SplitHostPort(hostport)
+	// if e != nil {
+	// 	return e
+	// }
 
-	if portInt, e = strconv.ParseUint(portstr, 10, 16); e != nil {
+	if portInt, e = strconv.ParseUint(port, 10, 16); e != nil {
 		return e
 	}
 
@@ -242,3 +250,6 @@ func (tp *TPDin2Device) PollStart(ctx context.Context, wg *sync.WaitGroup) error
 
 	return nil
 }
+
+//// cycle relay
+// func (tp *TPDin2Device) cycleRelay(relay TPDin2Relay)
