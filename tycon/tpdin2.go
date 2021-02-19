@@ -45,7 +45,6 @@ const (
 type TPDin2Device struct {
 	host             string
 	port             uint64
-	oidList          []string
 	ready            bool
 	internalInterval time.Duration
 	SNMPParams       *g.GoSNMP
@@ -86,16 +85,11 @@ func NewTPDin2() *TPDin2Device {
 }
 
 // Initialize TPDin2 object
-func (tp *TPDin2Device) Initialize(host, port string, sampleInterval time.Duration, oids []string) error {
+func (tp *TPDin2Device) Initialize(host, port string, sampleInterval time.Duration) error {
 
 	// var host, portstr string
 	var portInt uint64
 	var e error
-
-	// host, portstr, e = net.SplitHostPort(hostport)
-	// if e != nil {
-	// 	return e
-	// }
 
 	if portInt, e = strconv.ParseUint(port, 10, 16); e != nil {
 		return e
@@ -105,7 +99,6 @@ func (tp *TPDin2Device) Initialize(host, port string, sampleInterval time.Durati
 	tp.port = portInt
 	// tp.SampleInterval = sampleInterval
 	tp.internalInterval = sampleInterval / 3.0
-	tp.oidList = oids
 	tp.ready = false
 	tp.SNMPParams = nil
 
@@ -148,9 +141,9 @@ func (tp *TPDin2Device) Connect() error {
 }
 
 // QueryOids to get values for all device oids
-func (tp *TPDin2Device) QueryOids() (time.Time, map[string]string, error) {
+func (tp *TPDin2Device) QueryOids(oids *[]string) (time.Time, map[string]string, error) {
 
-	snmpVals, err := tp.SNMPParams.Get(tp.oidList)
+	snmpVals, err := tp.SNMPParams.Get(*oids)
 	if err != nil {
 		return time.Now(), nil, err
 	}
@@ -163,13 +156,13 @@ func (tp *TPDin2Device) QueryOids() (time.Time, map[string]string, error) {
 		switch variable.Type {
 		case g.OctetString:
 			// fmt.Printf("string: %s\n", string(variable.Value.([]byte)))
-			results[tp.oidList[i]] = string(variable.Value.([]byte))
+			results[(*oids)[i]] = string(variable.Value.([]byte))
 		default:
 			// ... or often you're just interested in numeric values.
 			// ToBigInt() will return the Value as a BigInt, for plugging
 			// into your calculations.
 			// fmt.Printf("number: %d\n", g.ToBigInt(variable.Value))
-			results[tp.oidList[i]] = g.ToBigInt(variable.Value).String()
+			results[(*oids)[i]] = g.ToBigInt(variable.Value).String()
 		}
 	}
 
@@ -179,9 +172,9 @@ func (tp *TPDin2Device) QueryOids() (time.Time, map[string]string, error) {
 }
 
 // queryDeviceVars queries device for TPDin2 OID values
-func (tp *TPDin2Device) queryDeviceVars() error {
+func (tp *TPDin2Device) queryDeviceVars(oids *[]string) error {
 
-	ts, results, err := tp.QueryOids()
+	ts, results, err := tp.QueryOids(oids)
 	if err != nil {
 		return err
 	}
@@ -214,7 +207,7 @@ func (tp *TPDin2Device) GetScan() (*TPDin2Scan, error) {
 }
 
 // PollStart start polling the connected device
-func (tp *TPDin2Device) PollStart(ctx context.Context, wg *sync.WaitGroup) error {
+func (tp *TPDin2Device) PollStart(ctx context.Context, wg *sync.WaitGroup, pollOids *[]string) error {
 	wg.Add(1)
 	defer wg.Done()
 
@@ -235,7 +228,7 @@ func (tp *TPDin2Device) PollStart(ctx context.Context, wg *sync.WaitGroup) error
 
 			select {
 			case <-time.After(time.Until(trigtime)):
-				err := tp.queryDeviceVars()
+				err := tp.queryDeviceVars(pollOids)
 				if err != nil {
 					rlog.ErrMsg(err.Error())
 					continue
