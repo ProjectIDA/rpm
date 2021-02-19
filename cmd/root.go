@@ -17,7 +17,6 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"log/syslog"
 	"os"
@@ -52,14 +51,7 @@ configuration file which is assumed to be located at $NRTS_HOME or
 can be specified on the command line.`,
 		// Uncomment the following line if your bare application
 		// has an action associated with it:
-		//	Run: func(cmd *cobra.Command, args []string) { },
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 2 {
-				return errors.New("wrong number of commandline parameters")
-			}
-			return nil
-
-		},
+		// Run: func(cmd *cobra.Command, args []string) {},
 	}
 )
 
