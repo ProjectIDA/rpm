@@ -29,6 +29,7 @@ import (
 	rlog "rpm/log"
 	"rpm/tycon"
 	"strconv"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -74,7 +75,7 @@ func runStatusCmd(args []string) {
 	initOids(rpmCfg)
 
 	tp2din := tycon.NewTPDin2()
-	err := tp2din.Initialize(host, port, 0, allOids)
+	err := tp2din.Initialize(host, port, 0)
 	if err != nil {
 		rlog.ErrMsg("unknown error initializing structures for %s, quitting", hostport)
 		log.Fatalln(err)
@@ -86,7 +87,7 @@ func runStatusCmd(args []string) {
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
-	ts, results, err := tp2din.QueryOids()
+	ts, results, err := tp2din.QueryOids(&allOids)
 	if err != nil {
 		fmt.Printf("error querying device %s\n", hostport)
 		rlog.ErrMsg("error querying device %s\n", hostport)
@@ -95,6 +96,12 @@ func runStatusCmd(args []string) {
 
 	fmt.Println()
 	fmt.Printf("%40s:  %s\n", "Host", hostport)
+
+	displayStatusInfo(ts, results)
+
+}
+
+func displayStatusInfo(ts time.Time, results map[string]string) {
 
 	for _, val := range rpmCfg.Oids.Static {
 		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])

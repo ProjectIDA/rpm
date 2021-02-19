@@ -54,11 +54,11 @@ var pollCmd = &cobra.Command{
 	Use:   "poll host_and_port polling_interval_in_secs",
 	Short: "Poll SNMP target for values",
 	Long:  `Poll SNMP target for values at a fixed interval >= 1.0 seconds`,
-	Args:  checkArgs, //cobra.ExactArgs(2),
+	Args:  checkPollArgs, //cobra.ExactArgs(2),
 	Run:   poll,
 }
 
-func checkArgs(cmd *cobra.Command, args []string) error {
+func checkPollArgs(cmd *cobra.Command, args []string) error {
 
 	numArgs := 2
 	if len(args) != numArgs {
@@ -147,7 +147,7 @@ func poll(cmd *cobra.Command, args []string) {
 	sigdone := setupSignals(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 
 	tp2din := tycon.NewTPDin2()
-	err := tp2din.Initialize(host, port, dInterval, allOids)
+	err := tp2din.Initialize(host, port, dInterval)
 	if err != nil {
 		rlog.ErrMsg("unknown error initializing tp2din... quitting")
 		log.Fatalln(err)
@@ -162,7 +162,7 @@ func poll(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	err = tp2din.PollStart(ctx, &wg)
+	err = tp2din.PollStart(ctx, &wg, &allOids)
 	if err != nil {
 		rlog.ErrMsg("could not start internal polling loop... quitting")
 		cancel()
