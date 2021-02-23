@@ -292,7 +292,7 @@ func formatSNMPHostPort(rawHost string) (string, string, error) {
 			err = fmt.Errorf("could not parse host %s: ", rawHost)
 			return "", "", err
 		}
-		rawHost = ":161"
+		rawHost += ":161"
 	}
 	parts := strings.Split(rawHost, ":")
 
