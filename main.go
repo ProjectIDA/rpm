@@ -168,7 +168,7 @@ func executeCmd() {
 
 	switch appCfg.cmd {
 	case "poll":
-		cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
+		cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
 	case "status":
 		cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
 	case "ctl":
