@@ -33,8 +33,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/spf13/cobra"
+	// "github.com/spf13/cobra"
 )
 
 // dataOids are the OID endpoints that we will poll the device for
@@ -50,24 +49,19 @@ var allOidInfo []config.OidInfo
 var allOids []string
 
 // pollCmd represents the poll command
-var pollCmd = &cobra.Command{
-	Use:   "poll host_and_port polling_interval_in_secs",
-	Short: "Poll SNMP target for values",
-	Long:  `Poll SNMP target for values at a fixed interval >= 1.0 seconds`,
-	Args:  checkPollArgs, //cobra.ExactArgs(2),
-	Run:   poll,
-}
+// var pollCmd = &cobra.Command{
+// 	Use:   "poll host_and_port polling_interval_in_secs",
+// 	Short: "Poll SNMP target for values",
+// 	Long:  `Poll SNMP target for values at a fixed interval >= 1.0 seconds`,
+// 	Args:  checkPollArgs, //cobra.ExactArgs(2),
+// 	Run:   poll,
+// }
 
-func checkPollArgs(cmd *cobra.Command, args []string) error {
+func getSampleInterval(intstr string) (float64, error) {
 
-	numArgs := 2
-	if len(args) != numArgs {
-		return fmt.Errorf("poll requires %d arguments", numArgs)
-	}
-
-	val, err := strconv.ParseFloat(args[1], 32)
+	val, err := strconv.ParseFloat(intstr, 32)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if (val < tycon.MinSampleInterval.Seconds()) || (val > tycon.MaxSampleInterval.Seconds()) {
@@ -75,14 +69,22 @@ func checkPollArgs(cmd *cobra.Command, args []string) error {
 			val,
 			tycon.MinSampleInterval.Seconds(),
 			tycon.MaxSampleInterval.Seconds()))
-		return fmt.Errorf("invalid sample interval %f must be between %.0f and %.0f seconds",
+		return 0, fmt.Errorf("invalid sample interval %f must be between %.0f and %.0f seconds",
 			val,
 			tycon.MinSampleInterval.Seconds(),
 			tycon.MaxSampleInterval.Seconds())
 	}
 
-	return nil
+	return val, nil
 }
+
+// PollingConfig holds parameters for POLL command
+// type PollingConfig struct {
+// 	Host         string
+// 	Port         string
+// 	IntervalSecs time.Duration
+// 	rpmCfg       *config.RPMConfig
+// }
 
 func formatScan(sampleInterval time.Duration, cfg *config.RPMConfig, scan *tycon.TPDin2Scan) string {
 
@@ -131,23 +133,30 @@ func logDeviceInfo(scan *tycon.TPDin2Scan) {
 
 }
 
-func poll(cmd *cobra.Command, args []string) {
+// Poll the TPDin2 device
+func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 	// snmpwalk -On -c readwrite -M /usr/local/share/snmp/mibs -v 1 localhost
 
-	rlog.DebugMsg(fmt.Sprintf("poll cmd with args[]: %v\n", args))
+	// rlog.DebugMsg(fmt.Sprintf("poll cmd with args[]: %v\n", args))
+	var err error
 
-	host, port := formatSNMPHostPort(args[0])
-	fInterval, _ := strconv.ParseFloat(args[1], 32)
+	cfg.Host = host
+	cfg.Port = port
+	cfg.RPMCfg = rpmCfg
+
+	intervalSecsf64, err := getSampleInterval(pollArgs[0])
+
+	fInterval := float32(intervalSecsf64)
 	dInterval := time.Duration(fInterval) * time.Second
 	hInterval := dInterval / 2
 
 	rlog.NoticeMsg(fmt.Sprintf("Host: %s:%s; interval: %.0f sec(s)\n", host, port, fInterval))
 
-	initOids(rpmCfg)
+	initOids(cfg.RPMCfg)
 	sigdone := setupSignals(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 
 	tp2din := tycon.NewTPDin2()
-	err := tp2din.Initialize(host, port, dInterval)
+	err = tp2din.Initialize(host, port, dInterval)
 	if err != nil {
 		rlog.ErrMsg("unknown error initializing tp2din... quitting")
 		log.Fatalln(err)
@@ -258,16 +267,16 @@ func poll(cmd *cobra.Command, args []string) {
 
 }
 
-func init() {
-	rootCmd.AddCommand(pollCmd)
+// func init() {
+// 	rootCmd.AddCommand(pollCmd)
 
-	// Here you will define your flags and configuration settings.
+// 	// Here you will define your flags and configuration settings.
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// pollCmd.PersistentFlags().String("foo", "", "A help for foo")
+// 	// Cobra supports Persistent Flags which will work for this command
+// 	// and all subcommands, e.g.:
+// 	// pollCmd.PersistentFlags().String("foo", "", "A help for foo")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// pollCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
+// 	// Cobra supports local flags which will only run when this command
+// 	// is called directly, e.g.:
+// 	// pollCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+// }
