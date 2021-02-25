@@ -297,15 +297,11 @@ func formatSNMPHostPort(rawHost string) (string, string, error) {
 	}
 
     h, p, _ := net.SplitHostPort(rawHost)
-    fmt.Printf("host:%s   port:%s\n", h, p)
-
     ips, err := net.LookupHost(h)
     if err != nil {
         return "", "", err
     }
-    fmt.Printf("ips %v, %s\n", ips, err)
-	/* parts := strings.Split(rawHost, ":") */
 
-	return h, p, nil
+	return ips[0], p, nil
 
 }
