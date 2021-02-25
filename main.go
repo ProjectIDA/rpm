@@ -279,10 +279,6 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 	viper.Unmarshal(&rpmCfg)
 	rpmCfg.CfgFile = viper.ConfigFileUsed()
 
-	// fmt.Printf("Checking read of config. %v\n", viper.GetStringMapString("OIDs.enterprises.45621.2.2.3.0"))
-	// fmt.Printf("Checking unmarshlled cfg General value: %s\n", rpmcfg.General.Sta)
-	// fmt.Printf("Checking unmarshlled cfg Relays value: %v\n", rpmcfg.OIDs.Relays[0])
-
 	if err := rpmCfg.Validate(); err != nil {
 		fmt.Printf(err.Error())
 	}
@@ -296,11 +292,11 @@ func formatSNMPHostPort(rawHost string) (string, string, error) {
 		rawHost += ":161"
 	}
 
-    h, p, _ := net.SplitHostPort(rawHost)
-    ips, err := net.LookupHost(h)
-    if err != nil {
-        return "", "", err
-    }
+	h, p, _ := net.SplitHostPort(rawHost)
+	ips, err := net.LookupHost(h)
+	if err != nil {
+		return "", "", err
+	}
 
 	return ips[0], p, nil
 
