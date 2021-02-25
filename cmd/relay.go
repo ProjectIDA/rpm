@@ -34,7 +34,7 @@ import (
 )
 
 // Ctl sets, gets, and cycles relays
-func Ctl(host, port string, relay int, rpmCfg *config.RPMConfig, pollArgs []string) {
+func Relay(host, port string, relay int, rpmCfg *config.RPMConfig, relayArgs []string) {
 
 	cfg.Host = host
 	cfg.Port = port
