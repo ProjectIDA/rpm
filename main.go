@@ -170,8 +170,9 @@ func executeCmd() {
 	case "poll":
 		cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
 	case "status":
-		cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
-	case "ctl":
+		cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+	case "relay":
+		cmd.Relay(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
 	}
 }
 

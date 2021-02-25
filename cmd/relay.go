@@ -33,14 +33,12 @@ import (
 	"time"
 )
 
-// Ctl sets, gets, and cycles relays
-func Relay(host, port string, relay int, rpmCfg *config.RPMConfig, relayArgs []string) {
+// Relay sets, gets, and cycles relays
+func Relay(host, port string, rpmCfg *config.RPMConfig, relayArgs []string) {
 
 	cfg.Host = host
 	cfg.Port = port
 	cfg.RPMCfg = rpmCfg
-
-	targetRelay := relay
 
 	rlog.NoticeMsg(fmt.Sprintf("running Ctl command on host: %s:%s and relay: %d\n", cfg.Host, cfg.Port, targetRelay))
 
