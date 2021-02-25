@@ -95,17 +95,6 @@ func formatScan(sampleInterval time.Duration, cfg *config.RPMConfig, scan *tycon
 
 }
 
-// initialize OID vars
-func initOids(c *config.RPMConfig) {
-
-	// from the config collect dataoids to be polled
-	dataOids, dataOidInfo = c.DataOidsInfo()
-	staticOids, staticOidInfo = c.StaticOidsInfo()
-	allOids = append(staticOids, dataOids...)
-	allOidInfo = append(staticOidInfo, dataOidInfo...)
-
-}
-
 func logDeviceInfo(scan *tycon.TPDin2Scan) {
 
 	for _, oidinfo := range staticOidInfo {
@@ -136,22 +125,16 @@ func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 	initOids(cfg.RPMCfg)
 
 	tp2din := tycon.NewTPDin2()
-	err = tp2din.Initialize(host, port, dInterval)
+	err = tp2din.InitAndConnect(cfg.Host, cfg.Port)
 	if err != nil {
-		rlog.ErrMsg("unknown error initializing tp2din... quitting")
 		log.Fatalln(err)
-	}
-	err = tp2din.Connect()
-	if err != nil {
-		rlog.CritMsg("could not connect to %s:%s... quitting.", host, port)
-		log.Fatalln(fmt.Errorf("could not connect to %s:%s... quitting", host, port))
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	err = tp2din.PollStart(ctx, &wg, &allOids)
+	err = tp2din.PollStart(ctx, &wg, &allOids, dInterval)
 	if err != nil {
 		rlog.ErrMsg("could not start internal polling loop... quitting")
 		cancel()

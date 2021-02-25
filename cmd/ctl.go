@@ -33,14 +33,16 @@ import (
 	"time"
 )
 
-// Status runs the status command
-func Status(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
+// Ctl sets, gets, and cycles relays
+func Ctl(host, port string, relay int, rpmCfg *config.RPMConfig, pollArgs []string) {
 
 	cfg.Host = host
 	cfg.Port = port
 	cfg.RPMCfg = rpmCfg
 
-	rlog.NoticeMsg(fmt.Sprintf("running status command on host: %s:%s\n", cfg.Host, cfg.Port))
+	targetRelay := relay
+
+	rlog.NoticeMsg(fmt.Sprintf("running Ctl command on host: %s:%s and relay: %d\n", cfg.Host, cfg.Port, targetRelay))
 
 	initOids(cfg.RPMCfg)
 
@@ -65,7 +67,7 @@ func Status(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 
 }
 
-func displayStatusInfo(ts time.Time, results map[string]string) {
+func displayRelayInfo(ts time.Time, results map[string]string) {
 
 	for _, val := range cfg.RPMCfg.Oids.Static {
 		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])

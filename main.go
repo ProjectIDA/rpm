@@ -203,27 +203,27 @@ func readCLI() error {
 
 	flag.Parse()
 
-	// get command in os.Args[1]
+	// sanity check on params; needs at least host and cmd
 	if len(os.Args) < 2 {
 		err := errors.New("command line error, not enough parameters")
 		return err
 	}
 
-	// get command
-	cmd := os.Args[1]
-	if !validCmd(cmd) {
-		err = fmt.Errorf("unrecognized command: %s", cmd)
-		return err
-	}
-	appCfg.cmd = cmd
-
 	// parse host[]:port]
-	hostport := os.Args[2]
+	hostport := os.Args[1]
 	appCfg.host, appCfg.port, err = formatSNMPHostPort(hostport)
 	if err != nil {
 		err = fmt.Errorf("could not parse host[:port]: %s", hostport)
 		return err
 	}
+
+	// get command
+	cmd := os.Args[2]
+	if !validCmd(cmd) {
+		err = fmt.Errorf("unrecognized command: %s", cmd)
+		return err
+	}
+	appCfg.cmd = cmd
 
 	return err
 }

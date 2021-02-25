@@ -41,6 +41,17 @@ func init() {
 
 }
 
+// initialize OID vars
+func initOids(c *config.RPMConfig) {
+
+	// from the config collect dataoids to be polled
+	dataOids, dataOidInfo = c.DataOidsInfo()
+	staticOids, staticOidInfo = c.StaticOidsInfo()
+	allOids = append(staticOids, dataOids...)
+	allOidInfo = append(staticOidInfo, dataOidInfo...)
+
+}
+
 // SetupSignals to trap for external kill signals
 func setupSignals(sigs ...os.Signal) chan bool {
 
