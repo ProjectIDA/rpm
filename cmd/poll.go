@@ -111,7 +111,7 @@ func pollArgsParse(args []string) (time.Duration, error) {
 		err := errors.New("not enough parameters, polling internval must be specified")
 		return dInterval, err
 	}
-	intervalSecsf64, err := getSampleInterval(args[0])
+	intervalSecsf64, err := getSampleInterval(args[1])
 	if err != nil {
 		return dInterval, err
 	}

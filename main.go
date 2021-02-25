@@ -170,11 +170,11 @@ func executeCmd() {
 
 	switch appCfg.cmd {
 	case "poll":
-		err = cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+		err = cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
 	case "status":
-		err = cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+		err = cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
 	case "relay":
-		err = cmd.Relay(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+		err = cmd.Relay(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
 	}
 
 	if err != nil {
@@ -292,18 +292,20 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 
 func formatSNMPHostPort(rawHost string) (string, string, error) {
 
-	var err error
-
 	if strings.Index(rawHost, ":") == -1 {
-		ip := net.ParseIP(rawHost)
-		if ip == nil {
-			err = fmt.Errorf("could not parse host %s: ", rawHost)
-			return "", "", err
-		}
 		rawHost += ":161"
 	}
-	parts := strings.Split(rawHost, ":")
 
-	return parts[0], parts[1], nil
+    h, p, _ := net.SplitHostPort(rawHost)
+    fmt.Printf("host:%s   port:%s\n", h, p)
+
+    ips, err := net.LookupHost(h)
+    if err != nil {
+        return "", "", err
+    }
+    fmt.Printf("ips %v, %s\n", ips, err)
+	/* parts := strings.Split(rawHost, ":") */
+
+	return h, p, nil
 
 }
