@@ -32,7 +32,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-	// "github.com/spf13/cobra"
 )
 
 // dataOids are the OID endpoints that we will poll the device for
@@ -46,15 +45,6 @@ var staticOids []string
 // allOids are the data+static OIDs
 var allOidInfo []config.OidInfo
 var allOids []string
-
-// pollCmd represents the poll command
-// var pollCmd = &cobra.Command{
-// 	Use:   "poll host_and_port polling_interval_in_secs",
-// 	Short: "Poll SNMP target for values",
-// 	Long:  `Poll SNMP target for values at a fixed interval >= 1.0 seconds`,
-// 	Args:  checkPollArgs, //cobra.ExactArgs(2),
-// 	Run:   poll,
-// }
 
 func getSampleInterval(intstr string) (float64, error) {
 
@@ -76,14 +66,6 @@ func getSampleInterval(intstr string) (float64, error) {
 
 	return val, nil
 }
-
-// PollingConfig holds parameters for POLL command
-// type PollingConfig struct {
-// 	Host         string
-// 	Port         string
-// 	IntervalSecs time.Duration
-// 	rpmCfg       *config.RPMConfig
-// }
 
 func formatScan(sampleInterval time.Duration, cfg *config.RPMConfig, scan *tycon.TPDin2Scan) string {
 
@@ -264,17 +246,3 @@ func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 	rlog.NoticeMsg("poll exiting")
 
 }
-
-// func init() {
-// 	rootCmd.AddCommand(pollCmd)
-
-// 	// Here you will define your flags and configuration settings.
-
-// 	// Cobra supports Persistent Flags which will work for this command
-// 	// and all subcommands, e.g.:
-// 	// pollCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-// 	// Cobra supports local flags which will only run when this command
-// 	// is called directly, e.g.:
-// 	// pollCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-// }
