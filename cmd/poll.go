@@ -152,7 +152,6 @@ func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 	rlog.NoticeMsg(fmt.Sprintf("Host: %s:%s; interval: %.0f sec(s)\n", host, port, fInterval))
 
 	initOids(cfg.RPMCfg)
-	// sigdone := setupSignals(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 
 	tp2din := tycon.NewTPDin2()
 	err = tp2din.Initialize(host, port, dInterval)
