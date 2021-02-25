@@ -34,13 +34,13 @@ import (
 )
 
 // Status runs the status command
-func Status(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
+func Status(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 	cfg.Host = host
 	cfg.Port = port
 	cfg.RPMCfg = rpmCfg
 
-	rlog.NoticeMsg(fmt.Sprintf("running status command on host: %s:%s\n", cfg.Host, cfg.Port))
+	rlog.NoticeMsg(fmt.Sprintf("running %s command on host: %s:%s\n", args[0], cfg.Host, cfg.Port))
 
 	initOids(cfg.RPMCfg)
 
@@ -53,9 +53,8 @@ func Status(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 
 	ts, results, err := tp2din.QueryOids(&allOids)
 	if err != nil {
-		fmt.Printf("error querying device %s:%s\n", cfg.Host, cfg.Port)
 		rlog.ErrMsg("error querying device %s:%s", cfg.Host, cfg.Port)
-		return
+		return err
 	}
 
 	fmt.Println()
@@ -63,6 +62,7 @@ func Status(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 
 	displayStatusInfo(ts, results)
 
+	return nil
 }
 
 func displayStatusInfo(ts time.Time, results map[string]string) {

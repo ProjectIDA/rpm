@@ -24,8 +24,8 @@ THE SOFTWARE.
 */
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
@@ -33,35 +33,52 @@ import (
 	"time"
 )
 
+func relayParseArgs(args []string) (time.Duration, error) {
+
+	var dInterval time.Duration
+
+	if len(args) < 1 {
+		err := errors.New("not enough parameters, polling internval must be specified")
+		return dInterval, err
+	}
+	intervalSecsf64, err := getSampleInterval(args[0])
+	if err != nil {
+		return dInterval, err
+	}
+
+	fInterval := float32(intervalSecsf64)
+	dInterval = time.Duration(fInterval) * time.Second
+
+	return dInterval, nil
+}
+
 // Relay sets, gets, and cycles relays
-func Relay(host, port string, rpmCfg *config.RPMConfig, relayArgs []string) {
+func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 	cfg.Host = host
 	cfg.Port = port
 	cfg.RPMCfg = rpmCfg
 
-	rlog.NoticeMsg(fmt.Sprintf("running Ctl command on host: %s:%s and relay: %d\n", cfg.Host, cfg.Port, targetRelay))
+	rlog.NoticeMsg(fmt.Sprintf("running %s command on host: %s:%s\n", args[0], cfg.Host, cfg.Port))
 
 	initOids(cfg.RPMCfg)
 
 	tp2din := tycon.NewTPDin2()
 	err := tp2din.InitAndConnect(cfg.Host, cfg.Port)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
 	ts, results, err := tp2din.QueryOids(&allOids)
 	if err != nil {
-		fmt.Printf("error querying device %s:%s\n", cfg.Host, cfg.Port)
 		rlog.ErrMsg("error querying device %s:%s", cfg.Host, cfg.Port)
-		return
+		return err
 	}
 
-	fmt.Println()
-	fmt.Printf("%40s:  %s:%s\n", "Host", cfg.Host, cfg.Port)
+	displayRelayInfo(ts, results)
 
-	displayStatusInfo(ts, results)
+	return nil
 
 }
 

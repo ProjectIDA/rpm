@@ -24,8 +24,8 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
@@ -103,8 +103,28 @@ func logDeviceInfo(scan *tycon.TPDin2Scan) {
 
 }
 
+func pollArgsParse(args []string) (time.Duration, error) {
+
+	var dInterval time.Duration
+
+	if len(args) < 1 {
+		err := errors.New("not enough parameters, polling internval must be specified")
+		return dInterval, err
+	}
+	intervalSecsf64, err := getSampleInterval(args[0])
+	if err != nil {
+		return dInterval, err
+	}
+
+	fInterval := float32(intervalSecsf64)
+	dInterval = time.Duration(fInterval) * time.Second
+
+	return dInterval, nil
+
+}
+
 // Poll the TPDin2 device
-func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
+func Poll(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 	// snmpwalk -On -c readwrite -M /usr/local/share/snmp/mibs -v 1 localhost
 
 	// rlog.DebugMsg(fmt.Sprintf("poll cmd with args[]: %v\n", args))
@@ -114,20 +134,22 @@ func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 	cfg.Port = port
 	cfg.RPMCfg = rpmCfg
 
-	intervalSecsf64, err := getSampleInterval(pollArgs[0])
+	rlog.NoticeMsg(fmt.Sprintf("running %s command on host: %s:%s\n", args[0], cfg.Host, cfg.Port))
 
-	fInterval := float32(intervalSecsf64)
-	dInterval := time.Duration(fInterval) * time.Second
+	dInterval, err := pollArgsParse(args)
+	if err != nil {
+		return err
+	}
 	hInterval := dInterval / 2
 
-	rlog.NoticeMsg(fmt.Sprintf("Host: %s:%s; interval: %.0f sec(s)\n", host, port, fInterval))
+	rlog.NoticeMsg(fmt.Sprintf("polling interval: %.0f sec(s)\n", dInterval.Seconds()))
 
 	initOids(cfg.RPMCfg)
 
 	tp2din := tycon.NewTPDin2()
 	err = tp2din.InitAndConnect(cfg.Host, cfg.Port)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
@@ -139,7 +161,7 @@ func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 		rlog.ErrMsg("could not start internal polling loop... quitting")
 		cancel()
 		wg.Wait()
-		log.Fatal(err)
+		return err
 	}
 	rlog.NoticeMsg("internal polling loop spawned")
 
@@ -226,6 +248,8 @@ func Poll(host, port string, rpmCfg *config.RPMConfig, pollArgs []string) {
 	}
 	cancel()
 	wg.Wait()
+
 	rlog.NoticeMsg("poll exiting")
 
+	return nil
 }

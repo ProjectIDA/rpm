@@ -166,13 +166,20 @@ func main() {
 
 func executeCmd() {
 
+	var err error
+
 	switch appCfg.cmd {
 	case "poll":
-		cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+		err = cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
 	case "status":
-		cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+		err = cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
 	case "relay":
-		cmd.Relay(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+		err = cmd.Relay(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[3:])
+	}
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		rlog.ErrMsg(err.Error())
 	}
 }
 
