@@ -34,18 +34,6 @@ import (
 	"time"
 )
 
-// dataOids are the OID endpoints that we will poll the device for
-var dataOidInfo []config.OidInfo
-var dataOids []string
-
-// staticOids are the OID endpoints that do not change for a given device and FW version
-var staticOidInfo []config.OidInfo
-var staticOids []string
-
-// allOids are the data+static OIDs
-var allOidInfo []config.OidInfo
-var allOids []string
-
 func getSampleInterval(intstr string) (float64, error) {
 
 	val, err := strconv.ParseFloat(intstr, 32)

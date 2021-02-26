@@ -33,23 +33,74 @@ import (
 	"time"
 )
 
-func relayParseArgs(args []string) (time.Duration, error) {
+const (
+	relay1           = "1"
+	relay2           = "2"
+	relay3           = "3"
+	relay4           = "4"
+	relayCmdSet      = "set"
+	relayCmdShow     = "show"
+	relayCmdCycle    = "cycle"
+	relayStateOpen   = "open"
+	relayStateClosed = "closed"
+)
 
-	var dInterval time.Duration
+var relays stringSlice
+var relayCommands stringSlice
+var relayStates stringSlice
 
-	if len(args) < 1 {
-		err := errors.New("not enough parameters, polling internval must be specified")
-		return dInterval, err
+func init() {
+	relays = stringSlice{relay1, relay2, relay3, relay4}
+	relayCommands = stringSlice{relayCmdSet, relayCmdShow, relayCmdCycle}
+	relayStates = stringSlice{relayStateOpen, relayStateClosed}
+}
+
+type stringSlice []string
+
+func (arr *stringSlice) contains(val string) bool {
+	for _, elem := range *arr {
+		if elem == val {
+			return true
+		}
 	}
-	intervalSecsf64, err := getSampleInterval(args[0])
-	if err != nil {
-		return dInterval, err
+	return false
+}
+
+func relayParseArgs(args []string) (string, string, string, error) {
+
+	var err error
+
+	if len(args) < 3 {
+		err = errors.New("not enough parameters, the relay command requires a relay number and an action")
+		return "", "", "", err
 	}
 
-	fInterval := float32(intervalSecsf64)
-	dInterval = time.Duration(fInterval) * time.Second
+	relay := args[1]
+	if !relays.contains(relay) {
+		err = fmt.Errorf("invalid relay: %s", relay)
+		return "", "", "", err
+	}
 
-	return dInterval, nil
+	action := args[2]
+	if !relayCommands.contains(action) {
+		err = fmt.Errorf("invalid relay action: %s", action)
+		return "", "", "", err
+	}
+
+	targetState := ""
+	if action == relayCmdSet {
+		if len(args) < 4 {
+			err = errors.New("not enough parameters, the 'relay set' command requires a relay number, action and target state (open, closed)")
+			return "", "", "", err
+		}
+		targetState = args[3]
+		if !relayStates.contains(targetState) {
+			err = fmt.Errorf("invalid relay state: %s", targetState)
+			return "", "", "", err
+		}
+	}
+
+	return relay, action, targetState, nil
 }
 
 // Relay sets, gets, and cycles relays
@@ -61,55 +112,39 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 	rlog.NoticeMsg(fmt.Sprintf("running %s command on host: %s:%s\n", args[0], cfg.Host, cfg.Port))
 
+	relay, action, targetState, err := relayParseArgs(args)
+
+	rlog.NoticeMsg(fmt.Sprintf("relay: %s, action: %s, targetState: %s\n", relay, action, targetState))
+
 	initOids(cfg.RPMCfg)
 
 	tp2din := tycon.NewTPDin2()
-	err := tp2din.InitAndConnect(cfg.Host, cfg.Port)
+	err = tp2din.InitAndConnect(cfg.Host, cfg.Port)
 	if err != nil {
 		return err
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
-	ts, results, err := tp2din.QueryOids(&allOids)
+	ts, results, err := tp2din.QueryOids(&relayOids)
 	if err != nil {
 		rlog.ErrMsg("error querying device %s:%s", cfg.Host, cfg.Port)
 		return err
 	}
 
-	displayRelayInfo(ts, results)
+	displayRelayInfo(relay, ts, results)
 
 	return nil
 
 }
 
-func displayRelayInfo(ts time.Time, results map[string]string) {
+func displayRelayInfo(relay string, ts time.Time, results map[string]string) {
 
-	for _, val := range cfg.RPMCfg.Oids.Static {
-		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])
+	fmt.Printf("%s %s", "Time of Query", ts.Format("2006-01-02 15:04:05 MST"))
+
+	for ndx, val := range cfg.RPMCfg.Oids.Relays {
+		if strconv.Itoa(ndx) == relay {
+			fmt.Printf("relay=%s state=%s label=%s\n", relay, results[val.Oid], val.Label)
+
+		}
 	}
-	fmt.Printf("%40s:  %s\n", "Time of Query", ts.Format("2006-01-02 15:04:05 MST"))
-	fmt.Println() /// Mon Jan 2 15:04:05 MST 2006
-
-	for _, val := range cfg.RPMCfg.Oids.Relays {
-		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])
-	}
-	fmt.Println()
-
-	for _, val := range cfg.RPMCfg.Oids.Voltages {
-		volts, _ := strconv.ParseFloat(results[val.Oid], 64)
-		fmt.Printf("%40s:  %4.1f (volts)\n", val.Label, volts/10)
-	}
-	fmt.Println()
-
-	for _, val := range cfg.RPMCfg.Oids.Currents {
-		amps, _ := strconv.ParseFloat(results[val.Oid], 64)
-		fmt.Printf("%40s:  %4.1f (amps)\n", val.Label, amps/10)
-	}
-	fmt.Println()
-
-	for _, val := range cfg.RPMCfg.Oids.Temps {
-		temp, _ := strconv.ParseFloat(results[val.Oid], 64)
-		fmt.Printf("%40s:  %4.1f (deg celsius)\n", val.Label, temp/10)
-	}
-
 }

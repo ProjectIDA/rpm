@@ -22,7 +22,6 @@ import (
 	"os/signal"
 	"rpm/config"
 	"syscall"
-	// "github.com/spf13/cobra"
 )
 
 // config holds parameters for the STATUS command
@@ -31,6 +30,22 @@ type cmdConfig struct {
 	Port   string
 	RPMCfg *config.RPMConfig
 }
+
+// dataOids are the OID endpoints that we will poll the device for
+var dataOidInfo []config.OidInfo
+var dataOids []string
+
+// staticOids are the OID endpoints that do not change for a given device and FW version
+var staticOidInfo []config.OidInfo
+var staticOids []string
+
+// relayOids are the Relay OIDs
+var relayOidInfo []config.OidInfo
+var relayOids []string
+
+// allOids are the data+static OIDs
+var allOidInfo []config.OidInfo
+var allOids []string
 
 var cfg cmdConfig
 var sigdone chan bool
@@ -47,6 +62,7 @@ func initOids(c *config.RPMConfig) {
 	// from the config collect dataoids to be polled
 	dataOids, dataOidInfo = c.DataOidsInfo()
 	staticOids, staticOidInfo = c.StaticOidsInfo()
+	relayOids, relayOidInfo = c.RelayOidsInfo()
 	allOids = append(staticOids, dataOids...)
 	allOidInfo = append(staticOidInfo, dataOidInfo...)
 
