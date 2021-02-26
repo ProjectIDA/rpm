@@ -139,6 +139,17 @@ func (tp *TPDin2Device) Connect() error {
 
 }
 
+// SetRelay to set the specified relay to the specified state
+func (tp *TPDin2Device) SetRelay(relay string, state string) error {
+	return nil
+}
+
+// CycleRelay to cycle the specified relay, blocking until complete if wait==true"
+func (tp *TPDin2Device) CycleRelay(relay string, wait bool) error {
+
+	return nil
+}
+
 // QueryOids to get values for all device oids
 func (tp *TPDin2Device) QueryOids(oids *[]string) (time.Time, map[string]string, error) {
 
