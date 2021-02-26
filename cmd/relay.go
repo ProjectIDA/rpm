@@ -34,10 +34,10 @@ import (
 )
 
 const (
-	relay1           = "1"
-	relay2           = "2"
-	relay3           = "3"
-	relay4           = "4"
+	relay1           = "0"
+	relay2           = "1"
+	relay3           = "2"
+	relay4           = "3"
 	relayCmdSet      = "set"
 	relayCmdShow     = "show"
 	relayCmdCycle    = "cycle"
@@ -100,6 +100,8 @@ func relayParseArgs(args []string) (string, string, string, error) {
 		}
 	}
 
+	rlog.NoticeMsg(fmt.Sprintf("relay: %s, action: %s, targetState: %s\n", relay, action, targetState))
+
 	return relay, action, targetState, nil
 }
 
@@ -113,8 +115,9 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 	rlog.NoticeMsg(fmt.Sprintf("running %s command on host: %s:%s\n", args[0], cfg.Host, cfg.Port))
 
 	relay, action, targetState, err := relayParseArgs(args)
-
-	rlog.NoticeMsg(fmt.Sprintf("relay: %s, action: %s, targetState: %s\n", relay, action, targetState))
+	if err != nil {
+		return err
+	}
 
 	initOids(cfg.RPMCfg)
 
@@ -131,7 +134,18 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 		return err
 	}
 
-	displayRelayInfo(relay, ts, results)
+	switch action {
+	case relayCmdShow:
+		displayRelayInfo(relay, ts, results)
+	case relayCmdSet:
+		{
+			fmt.Printf("set relay %s to %s\n", relay, targetState)
+		}
+	case relayCmdCycle:
+		{
+			fmt.Printf("cycle relay %s\n", relay)
+		}
+	}
 
 	return nil
 
