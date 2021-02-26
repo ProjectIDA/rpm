@@ -194,7 +194,7 @@ func validCmd(cmd string) bool {
 	validCommands := []string{
 		"poll",
 		"status",
-		"ctl",
+		"relay",
 	}
 	for _, n := range validCommands {
 		if cmd == n {
@@ -238,6 +238,7 @@ func readCLI() error {
 
 func usage() {
 	fmt.Println("do it this way, dummy.")
+	flag.Usage()
 }
 
 // initConfig reads in config file and ENV variables if set.

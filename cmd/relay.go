@@ -137,13 +137,27 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 }
 
+func relayStatePretty(state string) string {
+	switch state {
+	case "0":
+		return relayStateOpen
+	case "1":
+		return relayStateClosed
+	default:
+		return ""
+	}
+}
+
 func displayRelayInfo(relay string, ts time.Time, results map[string]string) {
 
-	fmt.Printf("%s %s", "Time of Query", ts.Format("2006-01-02 15:04:05 MST"))
+	fmt.Printf("%s", ts.Format("2006-01-02 15:04:05 MST"))
 
 	for ndx, val := range cfg.RPMCfg.Oids.Relays {
 		if strconv.Itoa(ndx) == relay {
-			fmt.Printf("relay=%s state=%s label=%s\n", relay, results[val.Oid], val.Label)
+			fmt.Printf(" relay=%s state=%s label=%s\n",
+				relay,
+				relayStatePretty(results[val.Oid]),
+				val.Label)
 
 		}
 	}
