@@ -34,10 +34,10 @@ import (
 )
 
 const (
-	relay1           = "0"
-	relay2           = "1"
-	relay3           = "2"
-	relay4           = "3"
+	relay1           = "1"
+	relay2           = "2"
+	relay3           = "3"
+	relay4           = "4"
 	relayCmdSet      = "set"
 	relayCmdShow     = "show"
 	relayCmdCycle    = "cycle"
@@ -167,7 +167,7 @@ func displayRelayInfo(relay string, ts time.Time, results map[string]string) {
 	fmt.Printf("%s", ts.Format("2006-01-02 15:04:05 MST"))
 
 	for ndx, val := range cfg.RPMCfg.Oids.Relays {
-		if strconv.Itoa(ndx) == relay {
+		if strconv.Itoa(ndx+1) == relay {
 			fmt.Printf(" relay=%s state=%s label=%s\n",
 				relay,
 				relayStatePretty(results[val.Oid]),
