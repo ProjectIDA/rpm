@@ -140,12 +140,26 @@ func (tp *TPDin2Device) Connect() error {
 }
 
 // SetRelay to set the specified relay to the specified state
-func (tp *TPDin2Device) SetRelay(relay string, state string) error {
+func (tp *TPDin2Device) SetRelay(relay, relayOid string, state string) error {
 	return nil
 }
 
 // CycleRelay to cycle the specified relay, blocking until complete if wait==true"
-func (tp *TPDin2Device) CycleRelay(relay string, wait bool) error {
+func (tp *TPDin2Device) CycleRelay(relay, relayOid string, wait bool) error {
+
+	setPDUs := []g.SnmpPDU{
+		{
+			Name:  relayOid,
+			Type:  g.OctetString,
+			Value: relayActionCycle,
+		},
+	}
+	res, err := tp.SNMPParams.Set(setPDUs)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("result: %v\n", res)
 
 	return nil
 }

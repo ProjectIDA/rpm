@@ -150,13 +150,33 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 				rlog.ErrMsg(err.Error())
 				return err
 			}
-			fmt.Printf("cycling relay %s\n", relay)
-			tp2din.CycleRelay(relay, true)
+
+			oid, err := relayToOid(relay)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				rlog.ErrMsg(err.Error())
+				return err
+			}
+			fmt.Printf("cycling relay %s ...\n", relay)
+			err = tp2din.CycleRelay(relay, oid, true)
 		}
 	}
 
 	return nil
 
+}
+
+func relayToOid(relay string) (string, error) {
+
+	if !relays.contains(relay) {
+		err := fmt.Errorf("invalid relay: %s", relay)
+		return "", err
+	}
+
+	relayNdx, _ := strconv.Atoi(relay)
+	oid := cfg.RPMCfg.Oids.Relays[relayNdx-1].Oid
+
+	return oid, nil
 }
 
 func relayActionAllowed(action, relay string) error {
