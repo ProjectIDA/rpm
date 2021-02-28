@@ -133,6 +133,17 @@ func main() {
 		log.Fatal("rpm: error creating logger (log.fatal)")
 	}
 
+	// parse host[]:port]
+	hostport := os.Args[1]
+	appCfg.host, appCfg.port, err = formatSNMPHostPort(hostport)
+	if err != nil {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		rlog.ErrMsg(err.Error())
+		usage()
+		os.Exit(1)
+	}
+
 	err = readCLI()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -213,14 +224,6 @@ func readCLI() error {
 	// sanity check on params; needs at least host and cmd
 	if len(os.Args) < 2 {
 		err := errors.New("command line error, not enough parameters")
-		return err
-	}
-
-	// parse host[]:port]
-	hostport := os.Args[1]
-	appCfg.host, appCfg.port, err = formatSNMPHostPort(hostport)
-	if err != nil {
-		// err = fmt.Errorf("could not parse host[:port]: %s", hostport)
 		return err
 	}
 
