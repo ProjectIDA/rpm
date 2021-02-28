@@ -159,6 +159,11 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 			}
 			fmt.Printf("cycling relay %s ...\n", relay)
 			err = tp2din.CycleRelay(relay, oid, true)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				rlog.ErrMsg(err.Error())
+				return err
+			}
 		}
 	}
 
