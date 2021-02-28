@@ -21,11 +21,11 @@ const (
 	// MaxSampleInterval is the largest sample interval in seconds
 	MaxSampleInterval time.Duration = 60 * time.Second
 
-	relayActionOpen        int    = 0
+	relayActionOpen        string = "0"
 	relayActionOpenLabel   string = "open"
-	relayActionClosed      int    = 1
+	relayActionClosed      string = "1"
 	relayActionClosedLabel string = "closed"
-	relayActionCycle       int    = 2
+	relayActionCycle       string = "2"
 	relayActionCycleLabel  string = "cycle"
 
 	maxCycleTime int = 99999
