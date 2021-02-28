@@ -136,9 +136,8 @@ func main() {
 	err = readCLI()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		usage()
-		flag.PrintDefaults()
 		rlog.ErrMsg(err.Error())
+		usage()
 		os.Exit(1)
 	}
 
@@ -237,7 +236,6 @@ func readCLI() error {
 }
 
 func usage() {
-	fmt.Println("do it this way, dummy.")
 	flag.Usage()
 	//TODO finish CLI help/Usage messages
 }

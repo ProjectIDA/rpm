@@ -74,7 +74,7 @@ func displayStatusInfo(ts time.Time, results map[string]string) {
 	fmt.Println() /// Mon Jan 2 15:04:05 MST 2006
 
 	for _, val := range cfg.RPMCfg.Oids.Relays {
-		fmt.Printf("%40s:  %s\n", val.Label, results[val.Oid])
+		fmt.Printf("%40s:  %s\n", val.Label, relayStatePretty(results[val.Oid]))
 	}
 	fmt.Println()
 
