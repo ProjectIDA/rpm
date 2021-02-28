@@ -146,22 +146,23 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 		{
 			err := relayActionAllowed(action, relay)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				rlog.ErrMsg(err.Error())
 				return err
 			}
 
 			oid, err := relayToOid(relay)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				rlog.ErrMsg(err.Error())
 				return err
 			}
+
 			fmt.Printf("cycling relay %s ...\n", relay)
+			rlog.NoticeMsg("cycling relay %s ...\n", relay)
+			endState := relayStatePretty(results[oid])
 			err = tp2din.CycleRelay(relay, oid, true)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				rlog.ErrMsg(err.Error())
+				return err
+			}
+			err = relayCycleWait(tp2din, relay, oid, endState)
+			if err != nil {
 				return err
 			}
 		}
@@ -171,17 +172,42 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 }
 
-func relayToOid(relay string) (string, error) {
+func displayRelayInfo(relay string, ts time.Time, results map[string]string) {
 
-	if !relays.contains(relay) {
-		err := fmt.Errorf("invalid relay: %s", relay)
-		return "", err
+	fmt.Printf("%s", ts.Format("2006-01-02 15:04:05 MST"))
+
+	for ndx, val := range cfg.RPMCfg.Oids.Relays {
+		if strconv.Itoa(ndx+1) == relay {
+			fmt.Printf(" relay=%s state=%s label=%s\n",
+				relay,
+				relayStatePretty(results[val.Oid]),
+				val.Label)
+
+		}
+	}
+}
+
+func relayCycleWait(tp2din *tycon.TPDin2Device, relay, relayOid, targetState string) error {
+
+	_, results, err := tp2din.QueryOids(&[]string{relayOid})
+	if err != nil {
+		rlog.ErrMsg("error querying device %s:%s", cfg.Host, cfg.Port)
+		return err
 	}
 
-	relayNdx, _ := strconv.Atoi(relay)
-	oid := cfg.RPMCfg.Oids.Relays[relayNdx-1].Oid
+	curState := relayStatePretty(results[relayOid])
+	for curState != targetState {
+		msg := fmt.Sprintf("cur state: %s; target state: %s\n", curState, targetState)
+		fmt.Fprintln(os.Stderr, msg)
+		rlog.NoticeMsg(msg)
 
-	return oid, nil
+		time.Sleep(time.Duration(time.Second))
+
+		_, results, _ = tp2din.QueryOids(&[]string{relayOid})
+		curState = relayStatePretty(results[relayOid])
+	}
+
+	return nil
 }
 
 func relayActionAllowed(action, relay string) error {
@@ -211,17 +237,15 @@ func relayStatePretty(state string) string {
 	}
 }
 
-func displayRelayInfo(relay string, ts time.Time, results map[string]string) {
+func relayToOid(relay string) (string, error) {
 
-	fmt.Printf("%s", ts.Format("2006-01-02 15:04:05 MST"))
-
-	for ndx, val := range cfg.RPMCfg.Oids.Relays {
-		if strconv.Itoa(ndx+1) == relay {
-			fmt.Printf(" relay=%s state=%s label=%s\n",
-				relay,
-				relayStatePretty(results[val.Oid]),
-				val.Label)
-
-		}
+	if !relays.contains(relay) {
+		err := fmt.Errorf("invalid relay: %s", relay)
+		return "", err
 	}
+
+	relayNdx, _ := strconv.Atoi(relay)
+	oid := cfg.RPMCfg.Oids.Relays[relayNdx-1].Oid
+
+	return oid, nil
 }

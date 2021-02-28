@@ -25,7 +25,7 @@ const (
 	relayActionOpenLabel   string = "open"
 	relayActionClosed      int    = 1
 	relayActionClosedLabel string = "closed"
-	relayActionCycle       string = "2"
+	relayActionCycle       int    = 2
 	relayActionCycleLabel  string = "cycle"
 
 	maxCycleTime int = 99999
@@ -154,13 +154,8 @@ func (tp *TPDin2Device) CycleRelay(relay, relayOid string, wait bool) error {
 			Value: relayActionCycle,
 		},
 	}
-	res, err := tp.SNMPParams.Set(setPDUs)
+	_, err := tp.SNMPParams.Set(setPDUs)
 	if err != nil {
-		return err
-	}
-
-	if res.Error != g.NoError {
-		err = fmt.Errorf("SNMP Error: %v", res.Error)
 		return err
 	}
 
