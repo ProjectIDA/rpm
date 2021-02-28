@@ -137,7 +137,6 @@ func main() {
 	hostport := os.Args[1]
 	appCfg.host, appCfg.port, err = formatSNMPHostPort(hostport)
 	if err != nil {
-	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		rlog.ErrMsg(err.Error())
 		usage()
