@@ -21,11 +21,11 @@ const (
 	// MaxSampleInterval is the largest sample interval in seconds
 	MaxSampleInterval time.Duration = 60 * time.Second
 
-	relayActionOpen        string = "0"
+	relayActionOpen        int    = 0
 	relayActionOpenLabel   string = "open"
-	relayActionClosed      string = "1"
+	relayActionClosed      int    = 1
 	relayActionClosedLabel string = "closed"
-	relayActionCycle       string = "2"
+	relayActionCycle       int    = 2
 	relayActionCycleLabel  string = "cycle"
 
 	maxCycleTime int = 99999
@@ -150,7 +150,7 @@ func (tp *TPDin2Device) CycleRelay(relay, relayOid string, wait bool) error {
 	setPDUs := []g.SnmpPDU{
 		{
 			Name:  relayOid,
-			Type:  g.OctetString,
+			Type:  g.Integer,
 			Value: relayActionCycle,
 		},
 	}
