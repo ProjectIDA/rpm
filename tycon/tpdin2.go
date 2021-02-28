@@ -25,7 +25,7 @@ const (
 	relayActionOpenLabel   string = "open"
 	relayActionClosed      int    = 1
 	relayActionClosedLabel string = "closed"
-	relayActionCycle       int    = 2
+	relayActionCycle       int    = "2"
 	relayActionCycleLabel  string = "cycle"
 
 	maxCycleTime int = 99999
@@ -109,7 +109,7 @@ func (tp *TPDin2Device) Initialize(host, port string) error {
 }
 
 // Connect via SNMP to device
-func (tp *TPDin2Device) Connect() error {
+func (tp *TPDin2Device) Connect(community string) error {
 
 	if !tp.ready {
 
@@ -117,7 +117,7 @@ func (tp *TPDin2Device) Connect() error {
 			Target:    tp.host,
 			Port:      uint16(tp.port),
 			Transport: "udp4",
-			Community: "write",
+			Community: community,
 			Version:   g.Version2c,
 			Retries:   0,
 			Timeout:   time.Duration(10) * time.Second,
@@ -159,7 +159,10 @@ func (tp *TPDin2Device) CycleRelay(relay, relayOid string, wait bool) error {
 		return err
 	}
 
-	fmt.Printf("result: %v\n", res)
+	if res.Error != g.NoError {
+		err = fmt.Errorf("SNMP Error: %v", res.Error)
+		return err
+	}
 
 	return nil
 }
@@ -278,13 +281,13 @@ func (tp *TPDin2Device) PollStart(
 //// cycle relay
 // func (tp *TPDin2Device) cycleRelay(relay TPDin2Relay)
 
-func (tp2din *TPDin2Device) InitAndConnect(host, port string) error {
+func (tp2din *TPDin2Device) InitAndConnect(host, port, snmpCommunity string) error {
 	err := tp2din.Initialize(host, port)
 	if err != nil {
 		rlog.ErrMsg("unknown error initializing structures for %s:%s, quitting", host, port)
 		// log.Fatalln(err)
 	}
-	err = tp2din.Connect()
+	err = tp2din.Connect(snmpCommunity)
 	if err != nil {
 		rlog.CritMsg("could not connect to %s:%s, quitting", host, port)
 		// log.Fatalln(fmt.Errorf("could not connect to %s:%s, quitting", host, port))

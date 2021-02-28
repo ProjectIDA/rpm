@@ -123,7 +123,7 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 	initOids(cfg.RPMCfg)
 
 	tp2din := tycon.NewTPDin2()
-	err = tp2din.InitAndConnect(cfg.Host, cfg.Port)
+	err = tp2din.InitAndConnect(cfg.Host, cfg.Port, "write")
 	if err != nil {
 		return err
 	}
