@@ -135,6 +135,9 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 		return err
 	}
 
+	relayNdx, _ := strconv.Atoi(relay)
+	relayInfo := cfg.RPMCfg.Oids.Relays[relayNdx-1]
+
 	switch action {
 	case relayCmdShow:
 		displayRelayInfo(relay, ts, results)
@@ -149,22 +152,25 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 				return err
 			}
 
-			oid, err := relayToOid(relay)
-			if err != nil {
-				return err
-			}
+			// end state is ucrrent state prior to issuing the cycle command
+			endState := relayStatePretty(results[relayInfo.Oid])
+			// msg := fmt.Sprintf("cycle relay %s with starting state %s", relay, endState)
+			msg := relayState(relay, relayInfo.Label, endState)
+			fmt.Printf("%s\n", msg)
+			rlog.NoticeMsg("%s", msg)
 
-			fmt.Printf("cycling relay %s ...\n", relay)
-			rlog.NoticeMsg("cycling relay %s ...\n", relay)
-			endState := relayStatePretty(results[oid])
-			err = tp2din.CycleRelay(relay, oid, true)
+			err = tp2din.CycleRelay(relayInfo.Oid)
 			if err != nil {
 				return err
 			}
-			err = relayCycleWait(tp2din, relay, oid, endState)
+			err = relayCycleWait(tp2din, relay, endState, relayInfo)
 			if err != nil {
 				return err
 			}
+			msg = fmt.Sprintf("cycle of relay %s complete", relay)
+			fmt.Println(msg)
+			rlog.NoticeMsg(msg)
+
 		}
 	}
 
@@ -172,39 +178,38 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 }
 
-func displayRelayInfo(relay string, ts time.Time, results map[string]string) {
+func relayState(relay, label, state string) string {
+	return fmt.Sprintf(
+		"%s (relay #%s) is %s",
+		label,
+		relay,
+		state,
+	)
+}
 
-	fmt.Printf("%s", ts.Format("2006-01-02 15:04:05 MST"))
+func displayRelayInfo(relay string, ts time.Time, results map[string]string) {
 
 	for ndx, val := range cfg.RPMCfg.Oids.Relays {
 		if strconv.Itoa(ndx+1) == relay {
-			fmt.Printf(" relay=%s state=%s label=%s\n",
-				relay,
-				relayStatePretty(results[val.Oid]),
-				val.Label)
-
+			fmt.Printf("%s\n", relayState(relay, val.Label, relayStatePretty(results[val.Oid])))
 		}
 	}
 }
 
-func relayCycleWait(tp2din *tycon.TPDin2Device, relay, relayOid, targetState string) error {
+func relayCycleWait(tp2din *tycon.TPDin2Device, relay, targetState string, info config.OidInfo) error {
 
-	_, results, err := tp2din.QueryOids(&[]string{relayOid})
-	if err != nil {
-		rlog.ErrMsg("error querying device %s:%s", cfg.Host, cfg.Port)
-		return err
-	}
+	time.Sleep(time.Duration(time.Second))
 
-	curState := relayStatePretty(results[relayOid])
+	curState := ""
 	for curState != targetState {
-		msg := fmt.Sprintf("cur state: %s; target state: %s\n", curState, targetState)
+		msg := relayState(relay, info.Label, targetState)
 		fmt.Fprintln(os.Stderr, msg)
 		rlog.NoticeMsg(msg)
 
 		time.Sleep(time.Duration(time.Second))
 
-		_, results, _ = tp2din.QueryOids(&[]string{relayOid})
-		curState = relayStatePretty(results[relayOid])
+		_, results, _ := tp2din.QueryOids(&[]string{info.Oid})
+		curState = relayStatePretty(results[info.Oid])
 	}
 
 	return nil

@@ -145,7 +145,7 @@ func (tp *TPDin2Device) SetRelay(relay, relayOid string, state string) error {
 }
 
 // CycleRelay to cycle the specified relay, blocking until complete if wait==true"
-func (tp *TPDin2Device) CycleRelay(relay, relayOid string, wait bool) error {
+func (tp *TPDin2Device) CycleRelay(relayOid string) error {
 
 	setPDUs := []g.SnmpPDU{
 		{
