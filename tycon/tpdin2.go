@@ -25,7 +25,7 @@ const (
 	relayActionOpenLabel   string = "open"
 	relayActionClosed      int    = 1
 	relayActionClosedLabel string = "closed"
-	relayActionCycle       int    = "2"
+	relayActionCycle       string = "2"
 	relayActionCycleLabel  string = "cycle"
 
 	maxCycleTime int = 99999
