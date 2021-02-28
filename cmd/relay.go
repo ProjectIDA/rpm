@@ -26,6 +26,7 @@ THE SOFTWARE.
 import (
 	"errors"
 	"fmt"
+	"os"
 	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
@@ -143,8 +144,31 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 		}
 	case relayCmdCycle:
 		{
-			fmt.Printf("cycle relay %s\n", relay)
+			err := relayActionAllowed(action, relay)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				rlog.ErrMsg(err.Error())
+				return err
+			}
+			fmt.Printf("cycling relay %s\n", relay)
+			tp2din.CycleRelay(relay, true)
 		}
+	}
+
+	return nil
+
+}
+
+func relayActionAllowed(action, relay string) error {
+
+	hostname, _ := os.Hostname()
+	fmt.Println("hostname: " + hostname)
+	hostrune := []rune(hostname)
+	hostndx := hostrune[len(hostrune)-1]
+
+	if []rune(relay)[0] == hostndx {
+		err := fmt.Errorf("The %s action for relay %s from %s is not allowed", action, relay, hostname)
+		return err
 	}
 
 	return nil
