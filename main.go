@@ -239,6 +239,7 @@ func readCLI() error {
 func usage() {
 	fmt.Println("do it this way, dummy.")
 	flag.Usage()
+	//TODO finish CLI help/Usage messages
 }
 
 // initConfig reads in config file and ENV variables if set.

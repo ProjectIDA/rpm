@@ -75,15 +75,15 @@ func relayParseArgs(args []string) (string, string, string, error) {
 		return "", "", "", err
 	}
 
-	relay := args[1]
-	if !relays.contains(relay) {
-		err = fmt.Errorf("invalid relay: %s", relay)
+	action := args[1]
+	if !relayCommands.contains(action) {
+		err = fmt.Errorf("invalid relay action: %s", action)
 		return "", "", "", err
 	}
 
-	action := args[2]
-	if !relayCommands.contains(action) {
-		err = fmt.Errorf("invalid relay action: %s", action)
+	relay := args[2]
+	if !relays.contains(relay) {
+		err = fmt.Errorf("invalid relay: %s", relay)
 		return "", "", "", err
 	}
 
