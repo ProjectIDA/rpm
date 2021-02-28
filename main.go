@@ -221,7 +221,7 @@ func readCLI() error {
 	hostport := os.Args[1]
 	appCfg.host, appCfg.port, err = formatSNMPHostPort(hostport)
 	if err != nil {
-		err = fmt.Errorf("could not parse host[:port]: %s", hostport)
+		// err = fmt.Errorf("could not parse host[:port]: %s", hostport)
 		return err
 	}
 
