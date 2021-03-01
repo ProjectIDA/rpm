@@ -241,9 +241,9 @@ func relayConfirmAction(relay, action, targetState string, info config.OidInfo) 
 
 	switch action {
 	case relayCmdCycle:
-		msg = fmt.Sprintf("Type 'YES' to CYCLE relay %s (%s) or 'NO' to cancel: ", relay, info.Label)
+		msg = fmt.Sprintf("\nType 'YES' to CYCLE relay %s (%s) or 'NO' to cancel: ", relay, info.Label)
 	case relayCmdSet:
-		msg = fmt.Sprintf("Type 'YES' to SET relay %s (%s) to %s or 'NO' to cancel: ", relay, info.Label, strings.ToUpper(targetState))
+		msg = fmt.Sprintf("\nType 'YES' to SET relay %s (%s) to %s or 'NO' to cancel: ", relay, info.Label, strings.ToUpper(targetState))
 	default:
 		return false
 	}
@@ -253,6 +253,7 @@ func relayConfirmAction(relay, action, targetState string, info config.OidInfo) 
 		fmt.Scanln(&ans)
 	}
 
+	fmt.Println()
 	return ans == "YES"
 }
 
