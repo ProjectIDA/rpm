@@ -204,7 +204,7 @@ func relaySet(tp2din *tycon.TPDin2Device, relay, targetState string, relayInfo c
 	res := results[relayInfo.Oid]
 	finalState := relayStatePretty(res)
 
-	msg := fmt.Sprintf("relay %s (%s) has been set to %s", relay, relayInfo.Label, finalState)
+	msg := fmt.Sprintf("relay %s (%s) has been set to %s", relay, relayInfo.Label, strings.ToUpper(finalState))
 	fmt.Println(msg)
 	rlog.NoticeMsg(msg)
 
