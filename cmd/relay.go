@@ -155,10 +155,6 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 				if relayConfirmAction(relay, relayCmdSet, targetState, relayInfo) {
 
-					msg := relayState(relay, relayInfo.Label, curState)
-					fmt.Println(msg)
-					rlog.NoticeMsg(msg)
-
 					err = relaySet(tp2din, relay, targetState, relayInfo)
 					if err != nil {
 						return err
@@ -201,11 +197,14 @@ func relaySet(tp2din *tycon.TPDin2Device, relay, targetState string, relayInfo c
 		return err
 	}
 
-	_, results, _ := tp2din.QueryOids(&relayOids)
+	_, results, err := tp2din.QueryOids(&relayOids)
+	if err != nil {
+		return err
+	}
 	res := results[relayInfo.Oid]
+	finalState := relayStatePretty(res)
 
-	endState := relayStatePretty(res)
-	msg := relayState(relay, relayInfo.Label, endState)
+	msg := fmt.Sprintf("relay %s (%s) has been set to %s", relay, relayInfo.Label, finalState)
 	fmt.Println(msg)
 	rlog.NoticeMsg(msg)
 
