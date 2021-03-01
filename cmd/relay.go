@@ -31,6 +31,7 @@ import (
 	rlog "rpm/log"
 	"rpm/tycon"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -143,7 +144,10 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 		displayRelayInfo(relay, ts, results)
 	case relayCmdSet:
 		{
-			fmt.Printf("set relay %s to %s\n", relay, targetState)
+			if relayConfirmAction(relay, relayCmdSet, relayInfo) {
+
+				fmt.Printf("set relay %s to %s\n", relay, targetState)
+			}
 		}
 	case relayCmdCycle:
 		{
@@ -152,24 +156,17 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 				return err
 			}
 
-			// end state is ucrrent state prior to issuing the cycle command
-			endState := relayStatePretty(results[relayInfo.Oid])
-			// msg := fmt.Sprintf("cycle relay %s with starting state %s", relay, endState)
-			msg := relayState(relay, relayInfo.Label, endState)
-			fmt.Printf("%s\n", msg)
-			rlog.NoticeMsg("%s", msg)
+			if relayConfirmAction(relay, relayCmdSet, relayInfo) {
 
-			err = tp2din.CycleRelay(relayInfo.Oid)
-			if err != nil {
-				return err
+				// end state is ucrrent state prior to issuing the cycle command
+				endState := relayStatePretty(results[relayInfo.Oid])
+
+				err = relayCycle(tp2din, relay, endState, relayInfo)
+				if err != nil {
+					return err
+				}
+
 			}
-			err = relayCycleWait(tp2din, relay, endState, relayInfo)
-			if err != nil {
-				return err
-			}
-			msg = fmt.Sprintf("cycle of relay %s complete", relay)
-			fmt.Println(msg)
-			rlog.NoticeMsg(msg)
 
 		}
 	}
@@ -178,9 +175,44 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 
 }
 
+func relayCycle(tp2din *tycon.TPDin2Device, relay, endState string, relayInfo config.OidInfo) error {
+
+	msg := relayState(relay, relayInfo.Label, endState)
+	fmt.Printf("%s\n", msg)
+	rlog.NoticeMsg("%s", msg)
+
+	err := tp2din.CycleRelay(relayInfo.Oid)
+	if err != nil {
+		return err
+	}
+	err = relayCycleWait(tp2din, relay, endState, relayInfo)
+	if err != nil {
+		return err
+	}
+	msg = fmt.Sprintf("cycle of %s (relay %s) complete", relayInfo.Label, relay)
+	fmt.Println(msg)
+	rlog.NoticeMsg(msg)
+
+	return nil
+}
+
+func relayConfirmAction(relay, action string, info config.OidInfo) bool {
+
+	var ans string
+
+	valid := stringSlice{"YES", "NO"}
+
+	for !valid.contains(ans) {
+		fmt.Printf("Type 'YES' to proceed or 'NO' to cancel the %s of relay %s: %s\n", strings.ToUpper(action), relay, info.Label)
+		fmt.Scanln(&ans)
+	}
+
+	return ans == "YES"
+}
+
 func relayState(relay, label, state string) string {
 	return fmt.Sprintf(
-		"%s (relay #%s) is %s",
+		"%s (#%s) is %s",
 		label,
 		relay,
 		state,
@@ -202,8 +234,8 @@ func relayCycleWait(tp2din *tycon.TPDin2Device, relay, targetState string, info 
 
 	curState := ""
 	for curState != targetState {
-		msg := relayState(relay, info.Label, targetState)
-		fmt.Fprintln(os.Stderr, msg)
+		msg := relayState(relay, info.Label, curState)
+		fmt.Println(msg)
 		rlog.NoticeMsg(msg)
 
 		time.Sleep(time.Duration(time.Second))
@@ -211,6 +243,10 @@ func relayCycleWait(tp2din *tycon.TPDin2Device, relay, targetState string, info 
 		_, results, _ := tp2din.QueryOids(&[]string{info.Oid})
 		curState = relayStatePretty(results[info.Oid])
 	}
+
+	msg := relayState(relay, info.Label, curState)
+	fmt.Println(msg)
+	rlog.NoticeMsg(msg)
 
 	return nil
 }

@@ -139,7 +139,6 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		rlog.ErrMsg(err.Error())
-		usage()
 		os.Exit(1)
 	}
 
