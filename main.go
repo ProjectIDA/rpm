@@ -106,7 +106,7 @@ func setUser(username string) error {
 		}
 		syscall.Setuid(uid)
 		syscall.Setgid(gid)
-		os.Chdir(nrtsuser.HomeDir)
+		// os.Chdir(nrtsuser.HomeDir)
 
 		var wd string
 		wd, err = os.Getwd()
@@ -126,7 +126,6 @@ func main() {
 	var err error
 
 	initFlags()
-	flag.Parse()
 
 	err = initLogging(appCfg.debug)
 	if err != nil {
@@ -195,7 +194,8 @@ func executeCmd(parms []string) {
 func initFlags() {
 
 	flag.BoolVar(&appCfg.debug, "debug", false, "enable debug logging")
-	flag.StringVar(&appCfg.cfgFile, "config", "~/etc/rpm.toml", "specify config file")
+	// flag.StringVar(&appCfg.cfgFile, "config", "", "specify config file")
+	flag.Parse()
 
 }
 
@@ -247,7 +247,6 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 
 	if rpmCfgFile != "" {
 		// Use config file from the flag.
-		fmt.Println("got cfg file " + rpmCfgFile)
 		viper.SetConfigFile(rpmCfgFile)
 	} else {
 
@@ -260,7 +259,7 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 		}
 		rlog.NoticeMsg(fmt.Sprintf("homedir: %s", user.HomeDir))
 
-		// Search config in home directory with name ".rpm" (without extension).
+		// Search for config cwd first, then in home directory with name "rpm.toml".
 		viper.AddConfigPath(".")
 		cfgDir := filepath.Join(user.HomeDir, "/etc")
 		viper.AddConfigPath(cfgDir)
@@ -273,6 +272,7 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println(err)
+		return nil, err
 	}
 	rlog.NoticeMsg(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 
@@ -282,6 +282,7 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 
 	if err := rpmCfg.Validate(); err != nil {
 		fmt.Printf(err.Error())
+		return nil, err
 	}
 
 	return rpmCfg, err
