@@ -126,6 +126,7 @@ func main() {
 	var err error
 
 	initFlags()
+	flag.Parse()
 
 	err = initLogging(appCfg.debug)
 	if err != nil {
@@ -134,7 +135,7 @@ func main() {
 	}
 
 	// parse host[]:port]
-	hostport := os.Args[1]
+	hostport := flag.Args()[0]
 	appCfg.host, appCfg.port, err = formatSNMPHostPort(hostport)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -142,7 +143,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = readCLI()
+	err = readCLI(flag.Args())
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		rlog.ErrMsg(err.Error())
@@ -167,22 +168,22 @@ func main() {
 	// read rpm config file
 	appCfg.rpmCfg, err = initTPDin2Config(appCfg.cfgFile)
 
-	executeCmd()
+	executeCmd(flag.Args())
 
 	rlog.NoticeMsg("%s shutting down", os.Args[0])
 }
 
-func executeCmd() {
+func executeCmd(parms []string) {
 
 	var err error
 
 	switch appCfg.cmd {
 	case "poll":
-		err = cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
+		err = cmd.Poll(appCfg.host, appCfg.port, appCfg.rpmCfg, parms[1:])
 	case "status":
-		err = cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
+		err = cmd.Status(appCfg.host, appCfg.port, appCfg.rpmCfg, parms[1:])
 	case "relay":
-		err = cmd.Relay(appCfg.host, appCfg.port, appCfg.rpmCfg, os.Args[2:])
+		err = cmd.Relay(appCfg.host, appCfg.port, appCfg.rpmCfg, parms[1:])
 	}
 
 	if err != nil {
@@ -194,7 +195,7 @@ func executeCmd() {
 func initFlags() {
 
 	flag.BoolVar(&appCfg.debug, "debug", false, "enable debug logging")
-	flag.StringVar(&appCfg.cfgFile, "config", "", "specify config file")
+	flag.StringVar(&appCfg.cfgFile, "config", "~/etc/rpm.toml", "specify config file")
 
 }
 
@@ -213,20 +214,18 @@ func validCmd(cmd string) bool {
 }
 
 // read CLI flags adjust app config appropriately
-func readCLI() error {
+func readCLI(parms []string) error {
 
 	var err error
 
-	flag.Parse()
-
 	// sanity check on params; needs at least host and cmd
-	if len(os.Args) < 2 {
+	if len(parms) < 2 {
 		err := errors.New("command line error, not enough parameters")
 		return err
 	}
 
 	// get command
-	cmd := os.Args[2]
+	cmd := parms[1]
 	if !validCmd(cmd) {
 		err = fmt.Errorf("unrecognized command: %s", cmd)
 		return err
@@ -248,6 +247,7 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 
 	if rpmCfgFile != "" {
 		// Use config file from the flag.
+		fmt.Println("got cfg file " + rpmCfgFile)
 		viper.SetConfigFile(rpmCfgFile)
 	} else {
 
@@ -261,9 +261,9 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 		rlog.NoticeMsg(fmt.Sprintf("homedir: %s", user.HomeDir))
 
 		// Search config in home directory with name ".rpm" (without extension).
+		viper.AddConfigPath(".")
 		cfgDir := filepath.Join(user.HomeDir, "/etc")
 		viper.AddConfigPath(cfgDir)
-		viper.AddConfigPath(".")
 		viper.SetConfigName("rpm")
 		viper.SetConfigType("toml")
 	}
