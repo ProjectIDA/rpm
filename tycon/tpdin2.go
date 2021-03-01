@@ -141,6 +141,30 @@ func (tp *TPDin2Device) Connect(community string) error {
 
 // SetRelay to set the specified relay to the specified state
 func (tp *TPDin2Device) SetRelay(relayOid, targetState string) error {
+
+	var snmpVal int
+
+	switch targetState {
+	case relayActionOpenLabel:
+		snmpVal = relayActionOpen
+	case relayActionClosedLabel:
+		snmpVal = relayActionClosed
+	default:
+		return fmt.Errorf("invalid tqarget state: %s", targetState)
+
+	}
+	setPDUs := []g.SnmpPDU{
+		{
+			Name:  relayOid,
+			Type:  g.Integer,
+			Value: snmpVal,
+		},
+	}
+	_, err := tp.SNMPParams.Set(setPDUs)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
