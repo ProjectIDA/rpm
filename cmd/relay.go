@@ -130,6 +130,7 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
+	// lets start with current station of the relays
 	ts, results, err := tp2din.QueryOids(&relayOids)
 	if err != nil {
 		rlog.ErrMsg("error querying device %s:%s", cfg.Host, cfg.Port)
@@ -144,9 +145,25 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 		displayRelayInfo(relay, ts, results)
 	case relayCmdSet:
 		{
-			if relayConfirmAction(relay, relayCmdSet, relayInfo) {
+			curState := relayStatePretty(results[relayInfo.Oid])
 
-				fmt.Printf("set relay %s to %s\n", relay, targetState)
+			if curState == targetState {
+				msg := fmt.Sprintf("relay %s (%s) is already %s, no action needed", relay, relayInfo.Label, strings.ToUpper(curState))
+				fmt.Fprintln(os.Stderr, msg)
+				rlog.WarningMsg(msg)
+			} else {
+
+				if relayConfirmAction(relay, relayCmdSet, targetState, relayInfo) {
+
+					msg := relayState(relay, relayInfo.Label, curState)
+					fmt.Println(msg)
+					rlog.NoticeMsg(msg)
+
+					err = relaySet(tp2din, relay, targetState, relayInfo)
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 	case relayCmdCycle:
@@ -156,9 +173,9 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 				return err
 			}
 
-			if relayConfirmAction(relay, relayCmdSet, relayInfo) {
+			if relayConfirmAction(relay, relayCmdCycle, "", relayInfo) {
 
-				// end state is ucrrent state prior to issuing the cycle command
+				// end state (and current state) prior to issuing the cycle command
 				endState := relayStatePretty(results[relayInfo.Oid])
 
 				err = relayCycle(tp2din, relay, endState, relayInfo)
@@ -166,13 +183,33 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 					return err
 				}
 
+			} else {
+				msg := fmt.Sprintf("relay %s command canceled", action)
+				fmt.Println(msg)
+				rlog.NoticeMsg(msg)
 			}
 
 		}
 	}
+	return nil
+}
+
+func relaySet(tp2din *tycon.TPDin2Device, relay, targetState string, relayInfo config.OidInfo) error {
+
+	err := tp2din.SetRelay(relayInfo.Oid, targetState)
+	if err != nil {
+		return err
+	}
+
+	_, results, _ := tp2din.QueryOids(&relayOids)
+	res := results[relayInfo.Oid]
+
+	endState := relayStatePretty(res)
+	msg := relayState(relay, relayInfo.Label, endState)
+	fmt.Println(msg)
+	rlog.NoticeMsg(msg)
 
 	return nil
-
 }
 
 func relayCycle(tp2din *tycon.TPDin2Device, relay, endState string, relayInfo config.OidInfo) error {
@@ -196,14 +233,24 @@ func relayCycle(tp2din *tycon.TPDin2Device, relay, endState string, relayInfo co
 	return nil
 }
 
-func relayConfirmAction(relay, action string, info config.OidInfo) bool {
+func relayConfirmAction(relay, action, targetState string, info config.OidInfo) bool {
 
 	var ans string
+	var msg string
 
 	valid := stringSlice{"YES", "NO"}
 
+	switch action {
+	case relayCmdCycle:
+		msg = fmt.Sprintf("Type 'YES' to CYCLE relay %s (%s) or 'NO' to cancel: ", relay, info.Label)
+	case relayCmdSet:
+		msg = fmt.Sprintf("Type 'YES' to SET relay %s (%s) to %s or 'NO' to cancel: ", relay, info.Label, strings.ToUpper(targetState))
+	default:
+		return false
+	}
+
 	for !valid.contains(ans) {
-		fmt.Printf("Type 'YES' to proceed or 'NO' to cancel the %s of relay %s: %s\n", strings.ToUpper(action), relay, info.Label)
+		fmt.Printf(msg)
 		fmt.Scanln(&ans)
 	}
 

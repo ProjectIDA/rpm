@@ -140,7 +140,7 @@ func (tp *TPDin2Device) Connect(community string) error {
 }
 
 // SetRelay to set the specified relay to the specified state
-func (tp *TPDin2Device) SetRelay(relay, relayOid string, state string) error {
+func (tp *TPDin2Device) SetRelay(relayOid, targetState string) error {
 	return nil
 }
 
