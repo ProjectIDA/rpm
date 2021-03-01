@@ -278,7 +278,9 @@ func relayCycleWait(tp2din *tycon.TPDin2Device, relay, targetState string, info 
 
 	time.Sleep(time.Duration(time.Second))
 
-	curState := ""
+	_, results, _ := tp2din.QueryOids(&[]string{info.Oid})
+	curState := relayStatePretty(results[info.Oid])
+
 	for curState != targetState {
 		msg := relayState(relay, info.Label, curState)
 		fmt.Println(msg)
