@@ -43,7 +43,7 @@ voltages = [
     { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Battery O/P Voltage", function = "" },
     { oid = "1.3.6.1.4.1.45621.2.2.6.0", chancode = "MV2", label = "Newmar O/P Voltage", function = "" }, 
     { oid = "1.3.6.1.4.1.45621.2.2.7.0", chancode = "MV3", label = "Wilmore O/P Voltage", function = "" },
-    { oid = "1.3.6.1.4.1.45621.2.2.8.0", chancode = "MV4", label = "Topaz AC (0 => 120VAC; 1 => AC off)", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.8.0", chancode = "MV4", label = "Topaz AC Ind (0=>AC on; 1=>AC off)", function = "" },
 ]
 currents = [
     { oid = "1.3.6.1.4.1.45621.2.2.9.0",  chancode = "MC1", label = "Wilmore O/P Current", function = "" },
