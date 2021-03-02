@@ -85,7 +85,7 @@ func NewTPDin2() *TPDin2Device {
 }
 
 // Initialize TPDin2 object
-func (tp *TPDin2Device) Initialize(host, port string, sampleInterval time.Duration) error {
+func (tp *TPDin2Device) Initialize(host, port string) error {
 
 	// var host, portstr string
 	var portInt uint64
@@ -98,7 +98,6 @@ func (tp *TPDin2Device) Initialize(host, port string, sampleInterval time.Durati
 	tp.host = host
 	tp.port = portInt
 	// tp.SampleInterval = sampleInterval
-	tp.internalInterval = sampleInterval / 3.0
 	tp.ready = false
 	tp.SNMPParams = nil
 
@@ -110,7 +109,7 @@ func (tp *TPDin2Device) Initialize(host, port string, sampleInterval time.Durati
 }
 
 // Connect via SNMP to device
-func (tp *TPDin2Device) Connect() error {
+func (tp *TPDin2Device) Connect(community string) error {
 
 	if !tp.ready {
 
@@ -118,7 +117,7 @@ func (tp *TPDin2Device) Connect() error {
 			Target:    tp.host,
 			Port:      uint16(tp.port),
 			Transport: "udp4",
-			Community: "write",
+			Community: community,
 			Version:   g.Version2c,
 			Retries:   0,
 			Timeout:   time.Duration(10) * time.Second,
@@ -138,6 +137,53 @@ func (tp *TPDin2Device) Connect() error {
 
 	return nil
 
+}
+
+// SetRelay to set the specified relay to the specified state
+func (tp *TPDin2Device) SetRelay(relayOid, targetState string) error {
+
+	var snmpVal int
+
+	switch targetState {
+	case relayActionOpenLabel:
+		snmpVal = relayActionOpen
+	case relayActionClosedLabel:
+		snmpVal = relayActionClosed
+	default:
+		return fmt.Errorf("invalid tqarget state: %s", targetState)
+
+	}
+	setPDUs := []g.SnmpPDU{
+		{
+			Name:  relayOid,
+			Type:  g.Integer,
+			Value: snmpVal,
+		},
+	}
+	_, err := tp.SNMPParams.Set(setPDUs)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CycleRelay to cycle the specified relay, blocking until complete if wait==true"
+func (tp *TPDin2Device) CycleRelay(relayOid string) error {
+
+	setPDUs := []g.SnmpPDU{
+		{
+			Name:  relayOid,
+			Type:  g.Integer,
+			Value: relayActionCycle,
+		},
+	}
+	_, err := tp.SNMPParams.Set(setPDUs)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // QueryOids to get values for all device oids
@@ -207,7 +253,14 @@ func (tp *TPDin2Device) GetScan() (*TPDin2Scan, error) {
 }
 
 // PollStart start polling the connected device
-func (tp *TPDin2Device) PollStart(ctx context.Context, wg *sync.WaitGroup, pollOids *[]string) error {
+func (tp *TPDin2Device) PollStart(
+	ctx context.Context,
+	wg *sync.WaitGroup,
+	pollOids *[]string,
+	sampleInterval time.Duration) error {
+
+	tp.internalInterval = sampleInterval / 3.0
+
 	wg.Add(1)
 	defer wg.Done()
 
@@ -246,3 +299,18 @@ func (tp *TPDin2Device) PollStart(ctx context.Context, wg *sync.WaitGroup, pollO
 
 //// cycle relay
 // func (tp *TPDin2Device) cycleRelay(relay TPDin2Relay)
+
+func (tp2din *TPDin2Device) InitAndConnect(host, port, snmpCommunity string) error {
+	err := tp2din.Initialize(host, port)
+	if err != nil {
+		rlog.ErrMsg("unknown error initializing structures for %s:%s, quitting", host, port)
+		// log.Fatalln(err)
+	}
+	err = tp2din.Connect(snmpCommunity)
+	if err != nil {
+		rlog.CritMsg("could not connect to %s:%s, quitting", host, port)
+		// log.Fatalln(fmt.Errorf("could not connect to %s:%s, quitting", host, port))
+	}
+
+	return err
+}

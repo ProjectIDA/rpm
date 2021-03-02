@@ -24,9 +24,9 @@ LBLAuxamp = "Aux Current"
 [oids]
 
 static = [
-    { oid = "1.3.6.1.4.1.45621.2.1.1.0", chancode = "", label = "Product Name", function = "", cycletime = 0 },
-    { oid = "1.3.6.1.4.1.45621.2.1.2.0", chancode = "", label = "Product FW Ver", function = "", cycletime = 0 },
-    { oid = "1.3.6.1.4.1.45621.2.1.3.0", chancode = "", label = "Product FW Date", function = "", cycletime = 0 },
+    { oid = "1.3.6.1.4.1.45621.2.1.1.0", chancode = "", label = "Product Name", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.1.2.0", chancode = "", label = "Product FW Ver", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.1.3.0", chancode = "", label = "Product FW Date", function = "" },
     ]
 
 tests = [
@@ -34,24 +34,24 @@ tests = [
     { oid = "1.3.6.1.2.1.1.4.0", chancode = "TS2", label = "Test OID #2" },
 ]
 relays = [
-    { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "12V PWR to Primary", function = "12V PWR to CPU-1", cycletime = 10 },
-    { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "12V PWR to Secondary", function = "12V PWR to CPU-2", cycletime = 10 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Relay 3 (not used)", function = "Not Used", cycletime = 60 },
-    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Relay 4 (not used)", function = "Not Used", cycletime = 3600 },
+    { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "12V PWR to Primary", function = "12V PWR to CPU-1" },
+    { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "12V PWR to Secondary", function = "12V PWR to CPU-2" }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Not Used", function = "Not Used" },
+    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Not Used", function = "Not Used" },
 ]
 voltages = [
-    { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Battery O/P Voltage", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.6.0", chancode = "MV2", label = "Newmar O/P Voltage", function = "", cycletime = 30 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.7.0", chancode = "MV3", label = "Wilmore O/P Voltage", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.8.0", chancode = "MV4", label = "Topaz AC (0 => 120VAC; 1 => AC off)", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Battery O/P Voltage", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.6.0", chancode = "MV2", label = "Newmar O/P Voltage", function = "" }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.7.0", chancode = "MV3", label = "Wilmore O/P Voltage", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.8.0", chancode = "MV4", label = "Topaz AC (0 => 120VAC; 1 => AC off)", function = "" },
 ]
 currents = [
-    { oid = "1.3.6.1.4.1.45621.2.2.9.0",  chancode = "MC1", label = "Wilmore O/P Current", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.10.0", chancode = "MC2", label = "Vault O/P Current", function = "", cycletime = 30 }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.11.0", chancode = "MC3", label = "Shunt Battery Current", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.12.0", chancode = "MC4", label = "Not Used", function = "", cycletime = 30 },
+    { oid = "1.3.6.1.4.1.45621.2.2.9.0",  chancode = "MC1", label = "Wilmore O/P Current", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.10.0", chancode = "MC2", label = "Vault O/P Current", function = "" }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.11.0", chancode = "MC3", label = "Shunt Battery Current", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.12.0", chancode = "MC4", label = "Not Used", function = "" },
 ]
 temps = [
-    { oid = "1.3.6.1.4.1.45621.2.2.13.0", chancode = "TPE", label = "Temp (Int)", function = "", cycletime = 30 },
-    { oid = "1.3.6.1.4.1.45621.2.2.14.0", chancode = "TPI", label = "Temp (Ext)", function = "", cycletime = 30 }, 
+    { oid = "1.3.6.1.4.1.45621.2.2.13.0", chancode = "TPE", label = "Temp (Int)", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.14.0", chancode = "TPI", label = "Temp (Ext)", function = "" }, 
 ]

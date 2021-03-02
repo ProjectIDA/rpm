@@ -20,22 +20,6 @@ type RPMConfig struct {
 	General generalConfig
 	WinMain winMainConfig
 	Oids    TyconOids
-	// test2   relay
-	// Oiddetails oidDetails
-	// Relay1       relay
-	// Relay2       relay
-	// Relay3       relay
-	// Relay4       relay
-	// Voltage1     voltage
-	// Voltage2     voltage
-	// Voltage3     voltage
-	// Voltage4     voltage
-	// Current1     current
-	// Current2     current
-	// Current3     current
-	// Current4     current
-	// Tempexternal temp
-	// Tempinternal temp
 	CfgFile string
 }
 
@@ -77,23 +61,12 @@ type TyconOids struct {
 
 // OidInfo holds detailed info for each Oid endpoint
 type OidInfo struct {
-	Oid       string
-	Chancode  string
-	Label     string
-	Function  string
-	Cycletime int
+	Oid      string
+	Chancode string
+	Label    string
+	Function string
+	// Cycletime int
 }
-
-// OIDsConfig OIDs
-// type OIDsConfig struct {
-// 	ProductName      string
-// 	ProductVersion   string
-// 	ProductBuilddate string
-// 	Relays           [4]string
-// 	Voltages         [4]string
-// 	Currents         [4]string
-// 	Temperatures     [4]string
-// }
 
 // DataOids provides list of list of Data Oids
 func (toids *TyconOids) DataOids() *[][]OidInfo {
@@ -105,16 +78,6 @@ func (toids *TyconOids) DataOids() *[][]OidInfo {
 		toids.Temps,
 	}
 }
-
-// // NewRpmCfg return zero'd struct for holding RPM config file information
-// func NewRpmCfg() *RPMConfig {
-// 	return &RPMConfig{
-// 		generalConfig{},
-// 		winMainConfig{},
-// 		TyconOids{},
-// 		"",
-// 	}
-// }
 
 // Validate the rpm TOML config file
 func (cfg RPMConfig) Validate() (e error) {

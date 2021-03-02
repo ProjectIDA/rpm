@@ -24,50 +24,21 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"rpm/config"
 	rlog "rpm/log"
 	"rpm/tycon"
 	"strconv"
 	"sync"
-	"syscall"
 	"time"
-
-	"github.com/spf13/cobra"
 )
 
-// dataOids are the OID endpoints that we will poll the device for
-var dataOidInfo []config.OidInfo
-var dataOids []string
+func getSampleInterval(intstr string) (float64, error) {
 
-// staticOids are the OID endpoints that do not change for a given device and FW version
-var staticOidInfo []config.OidInfo
-var staticOids []string
-
-// allOids are the data+static OIDs
-var allOidInfo []config.OidInfo
-var allOids []string
-
-// pollCmd represents the poll command
-var pollCmd = &cobra.Command{
-	Use:   "poll host_and_port polling_interval_in_secs",
-	Short: "Poll SNMP target for values",
-	Long:  `Poll SNMP target for values at a fixed interval >= 1.0 seconds`,
-	Args:  checkPollArgs, //cobra.ExactArgs(2),
-	Run:   poll,
-}
-
-func checkPollArgs(cmd *cobra.Command, args []string) error {
-
-	numArgs := 2
-	if len(args) != numArgs {
-		return fmt.Errorf("poll requires %d arguments", numArgs)
-	}
-
-	val, err := strconv.ParseFloat(args[1], 32)
+	val, err := strconv.ParseFloat(intstr, 32)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if (val < tycon.MinSampleInterval.Seconds()) || (val > tycon.MaxSampleInterval.Seconds()) {
@@ -75,13 +46,13 @@ func checkPollArgs(cmd *cobra.Command, args []string) error {
 			val,
 			tycon.MinSampleInterval.Seconds(),
 			tycon.MaxSampleInterval.Seconds()))
-		return fmt.Errorf("invalid sample interval %f must be between %.0f and %.0f seconds",
+		return 0, fmt.Errorf("invalid sample interval %f must be between %.0f and %.0f seconds",
 			val,
 			tycon.MinSampleInterval.Seconds(),
 			tycon.MaxSampleInterval.Seconds())
 	}
 
-	return nil
+	return val, nil
 }
 
 func formatScan(sampleInterval time.Duration, cfg *config.RPMConfig, scan *tycon.TPDin2Scan) string {
@@ -112,17 +83,6 @@ func formatScan(sampleInterval time.Duration, cfg *config.RPMConfig, scan *tycon
 
 }
 
-// initialize OID vars
-func initOids(c *config.RPMConfig) {
-
-	// from the config collect dataoids to be polled
-	dataOids, dataOidInfo = c.DataOidsInfo()
-	staticOids, staticOidInfo = c.StaticOidsInfo()
-	allOids = append(staticOids, dataOids...)
-	allOidInfo = append(staticOidInfo, dataOidInfo...)
-
-}
-
 func logDeviceInfo(scan *tycon.TPDin2Scan) {
 
 	for _, oidinfo := range staticOidInfo {
@@ -131,43 +91,65 @@ func logDeviceInfo(scan *tycon.TPDin2Scan) {
 
 }
 
-func poll(cmd *cobra.Command, args []string) {
+func pollArgsParse(args []string) (time.Duration, error) {
+
+	var dInterval time.Duration
+
+	if len(args) < 1 {
+		err := errors.New("not enough parameters, polling internval must be specified")
+		return dInterval, err
+	}
+	intervalSecsf64, err := getSampleInterval(args[1])
+	if err != nil {
+		return dInterval, err
+	}
+
+	fInterval := float32(intervalSecsf64)
+	dInterval = time.Duration(fInterval) * time.Second
+
+	return dInterval, nil
+
+}
+
+// Poll the TPDin2 device
+func Poll(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 	// snmpwalk -On -c readwrite -M /usr/local/share/snmp/mibs -v 1 localhost
 
-	rlog.DebugMsg(fmt.Sprintf("poll cmd with args[]: %v\n", args))
+	// rlog.DebugMsg(fmt.Sprintf("poll cmd with args[]: %v\n", args))
+	var err error
 
-	host, port := formatSNMPHostPort(args[0])
-	fInterval, _ := strconv.ParseFloat(args[1], 32)
-	dInterval := time.Duration(fInterval) * time.Second
+	cfg.Host = host
+	cfg.Port = port
+	cfg.RPMCfg = rpmCfg
+
+	rlog.NoticeMsg(fmt.Sprintf("running %s command on host: %s:%s\n", args[0], cfg.Host, cfg.Port))
+
+	dInterval, err := pollArgsParse(args)
+	if err != nil {
+		return err
+	}
 	hInterval := dInterval / 2
 
-	rlog.NoticeMsg(fmt.Sprintf("Host: %s:%s; interval: %.0f sec(s)\n", host, port, fInterval))
+	rlog.NoticeMsg(fmt.Sprintf("polling interval: %.0f sec(s)\n", dInterval.Seconds()))
 
-	initOids(rpmCfg)
-	sigdone := setupSignals(syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+	initOids(cfg.RPMCfg)
 
 	tp2din := tycon.NewTPDin2()
-	err := tp2din.Initialize(host, port, dInterval)
+	err = tp2din.InitAndConnect(cfg.Host, cfg.Port, "read")
 	if err != nil {
-		rlog.ErrMsg("unknown error initializing tp2din... quitting")
-		log.Fatalln(err)
-	}
-	err = tp2din.Connect()
-	if err != nil {
-		rlog.CritMsg("could not connect to %s:%s... quitting.", host, port)
-		log.Fatalln(fmt.Errorf("could not connect to %s:%s... quitting", host, port))
+		return err
 	}
 	defer tp2din.SNMPParams.Conn.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	err = tp2din.PollStart(ctx, &wg, &allOids)
+	err = tp2din.PollStart(ctx, &wg, &allOids, dInterval)
 	if err != nil {
 		rlog.ErrMsg("could not start internal polling loop... quitting")
 		cancel()
 		wg.Wait()
-		log.Fatal(err)
+		return err
 	}
 	rlog.NoticeMsg("internal polling loop spawned")
 
@@ -254,20 +236,8 @@ func poll(cmd *cobra.Command, args []string) {
 	}
 	cancel()
 	wg.Wait()
+
 	rlog.NoticeMsg("poll exiting")
 
-}
-
-func init() {
-	rootCmd.AddCommand(pollCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// pollCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// pollCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	return nil
 }
