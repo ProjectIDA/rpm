@@ -254,8 +254,10 @@ Commands:
 
 Examples:
     rpm 192.168.1.25 status        
+    rpm 192.168.1.25 poll 1
     rpm 192.168.1.25 relay cycle 2 
-    rpm 192.168.1.25 set 3 closed  
+    rpm 192.168.1.25 relay show 2 
+    rpm 192.168.1.25 relay set 3 closed  
 	`
 	fmt.Println(usagesMsg)
 }

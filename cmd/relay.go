@@ -204,7 +204,7 @@ func relaySet(tp2din *tycon.TPDin2Device, relay, targetState string, relayInfo c
 	res := results[relayInfo.Oid]
 	finalState := relayStatePretty(res)
 
-	msg := fmt.Sprintf("relay %s (%s) has been set to %s", relay, relayInfo.Label, strings.ToUpper(finalState))
+	msg := fmt.Sprintf("relay '%s' (#%s) has been set to %s", relayInfo.Label, relay, strings.ToUpper(finalState))
 	fmt.Println(msg)
 	rlog.NoticeMsg(msg)
 
@@ -225,7 +225,7 @@ func relayCycle(tp2din *tycon.TPDin2Device, relay, endState string, relayInfo co
 	if err != nil {
 		return err
 	}
-	msg = fmt.Sprintf("cycle of %s (relay %s) complete", relayInfo.Label, relay)
+	msg = fmt.Sprintf("cycle of '%s' (relay #%s) complete", relayInfo.Label, relay)
 	fmt.Println(msg)
 	rlog.NoticeMsg(msg)
 
@@ -330,7 +330,7 @@ func relayStatePretty(state string) string {
 func relayToOid(relay string) (string, error) {
 
 	if !relays.contains(relay) {
-		err := fmt.Errorf("invalid relay: %s", relay)
+		err := fmt.Errorf("invalid relay #: %s", relay)
 		return "", err
 	}
 

@@ -36,8 +36,8 @@ tests = [
 relays = [
     { oid = "1.3.6.1.4.1.45621.2.2.1.0", chancode = "RL1", label = "12V PWR to Primary", function = "12V PWR to CPU-1" },
     { oid = "1.3.6.1.4.1.45621.2.2.2.0", chancode = "RL2", label = "12V PWR to Secondary", function = "12V PWR to CPU-2" }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "not used", function = "Not Used" },
-    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "not used", function = "Not Used" },
+    { oid = "1.3.6.1.4.1.45621.2.2.3.0", chancode = "RL3", label = "Not Used", function = "Not Used" },
+    { oid = "1.3.6.1.4.1.45621.2.2.4.0", chancode = "RL4", label = "Not Used", function = "Not Used" },
 ]
 voltages = [
     { oid = "1.3.6.1.4.1.45621.2.2.5.0", chancode = "MV1", label = "Battery O/P Voltage", function = "" },
