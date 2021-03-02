@@ -157,12 +157,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = setUser(defaultUser)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		rlog.ErrMsg(err.Error())
-		os.Exit(1)
-	}
+	// err = setUser(defaultUser)
+	// if err != nil {
+	// 	fmt.Fprintln(os.Stderr, err.Error())
+	// 	rlog.ErrMsg(err.Error())
+	// 	os.Exit(1)
+	// }
 
 	// read rpm config file
 	appCfg.rpmCfg, err = initTPDin2Config(appCfg.cfgFile)
@@ -227,7 +227,7 @@ func readCLI(parms []string) error {
 	// get command
 	cmd := parms[1]
 	if !validCmd(cmd) {
-		err = fmt.Errorf("unrecognized command: %s", cmd)
+		err = fmt.Errorf("invalid command: %s", cmd)
 		return err
 	}
 	appCfg.cmd = cmd
@@ -236,8 +236,28 @@ func readCLI(parms []string) error {
 }
 
 func usage() {
-	flag.Usage()
-	//TODO finish CLI help/Usage messages
+	usagesMsg := `
+usage: rpm <hostname-or-ip[:port]> <command> [ command-parameters ]
+
+Commands:
+    status                - display Tycon TPDin2 current values
+
+    poll <interval-secs>  - will poll TPDin device repeatedly, 
+                            outputing results to stdout in
+                            txtoida10 version 2 format
+
+    relay <sub-command>, where <sub-sommand> is one of:
+	
+        show  <relay-#>                   - to show current state of relay
+        cycle <relay-#>                   - to cycle relay
+        set   <relay-#> { open | closed } - set relay to a new state
+
+Examples:
+    rpm 192.168.1.25 status        
+    rpm 192.168.1.25 relay cycle 2 
+    rpm 192.168.1.25 set 3 closed  
+	`
+	fmt.Println(usagesMsg)
 }
 
 // initConfig reads in config file and ENV variables if set.
