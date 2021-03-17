@@ -145,6 +145,11 @@ func Relay(host, port string, rpmCfg *config.RPMConfig, args []string) error {
 		displayRelayInfo(relay, ts, results)
 	case relayCmdSet:
 		{
+			err := relayActionAllowed(action, relay)
+			if err != nil {
+				return err
+			}
+
 			curState := relayStatePretty(results[relayInfo.Oid])
 
 			if curState == targetState {
