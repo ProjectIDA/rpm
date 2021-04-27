@@ -106,7 +106,8 @@ func setUser(username string) error {
 		}
 		syscall.Setuid(uid)
 		syscall.Setgid(gid)
-		// os.Chdir(nrtsuser.HomeDir)
+		os.Chdir(nrtsuser.HomeDir)
+        rlog.NoticeMsg(fmt.Sprintf("nrtsuser.HomeDir: %s", nrtsuser.HomeDir))
 
 		var wd string
 		wd, err = os.Getwd()
@@ -157,15 +158,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	// err = setUser(defaultUser)
-	// if err != nil {
-	// 	fmt.Fprintln(os.Stderr, err.Error())
-	// 	rlog.ErrMsg(err.Error())
-	// 	os.Exit(1)
-	// }
+	err = setUser(defaultUser)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		rlog.ErrMsg(err.Error())
+		os.Exit(1)
+	}
 
 	// read rpm config file
 	appCfg.rpmCfg, err = initTPDin2Config(appCfg.cfgFile)
+    if err != nil {
+        fmt.Fprintln(os.Stderr, err.Error())
+        rlog.ErrMsg(err.Error())
+        os.Exit(1)
+    }
 
 	executeCmd(flag.Args())
 
@@ -274,7 +280,7 @@ func initTPDin2Config(rpmCfgFile string) (*config.RPMConfig, error) {
 
 		// get user home dir
 		// Find home directory.
-		user, err := user.Current()
+		user, err := user.Lookup(defaultUser)
 		if err != nil {
 			rlog.ErrMsg(err.Error())
 			os.Exit(1)
