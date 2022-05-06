@@ -6,30 +6,35 @@ __On FBSD system as user *nrts*:__
 
 * mkdir -p build/go
 * cd build/go
-* curl -L -o go1.16.3.freebsd-amd64.tar.gz https://golang.org/dl/go1.16.3.freebsd-amd64.tar.gz
-_Golang v16.3 current as of this writing_
+* curl -L -o go1.18.1.freebsd-386.tar.gz https://go.dev/dl/go1.18.1.freebsd-386.tar.gz
+_Golang v18.1 current as of this writing_
 
 __as *root*:__
 
-* tar -C /usr/local -xzf go1.16.3.freebsd-amd64.tar.gz
+* cd ~nrts/build/go
+* tar -C /usr/local -xzf go1.18.1.freebsd-386.tar.gz
 
 __as user *nrts*:__
 
-* add to .pathrc: `set path = ($path /usr/local/go/bin)`
+* Check ~nrts/.pathrc for `set MyPath = ($MyPath /usr/local/go/bin)` and if not there, add before the line `set path = ($MyPath $path)`.
+* log out (`exit`)
+* log back in
+* Check go installation by viewing the go version: `go version`. You should see: *go version go1.18.1 freebsd/386*
 
 ### Get RPM Source from a Release on Github and Build
 You must use a Personal Access Token from your GitHub account
 * cd ~/build
 * set TOKEN = "_your token goes here in quotes"
-#### _this example downloads adn builds release version 1.2 created on Github_
+#### _This example downloads and builds release version 1.2 created on Github_
 * curl -sL --header "Authorization: token $TOKEN" --header 'Accept: application/octet-stream' https://github.com/ProjectIDA/rpm/archive/refs/tags/v1.2.tar.gz -o rpm.v1.2.tar.gz
 * tar xvf rpm.v1.2.tar.gz
 * cd rpm-1.2
 * go build
-* chmod 755 ~/bin/rpm _(only if rpm already exists in ~/bin)_
+* _if ~/bin/rpm exists and you are upgrading, then_ `chmod 755 ~/bin/rpm`
 * cp rpm ~/bin/
 * cp rpm.toml ~/etc
-* Edit ~/etc/rpm.toml and set correct station code at top of file
+* cd ~/etc
+* Edit ~/etc/rpm.toml and set correct station code (uppercase) at top of file
 
 ### TODO
 *better log msgs on signals and on shutdown
