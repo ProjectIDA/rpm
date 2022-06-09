@@ -48,8 +48,8 @@ voltages = [
 currents = [
     { oid = "1.3.6.1.4.1.45621.2.2.9.0",  chancode = "MC1", label = "Wilmore O/P Current", function = "" },
     { oid = "1.3.6.1.4.1.45621.2.2.10.0", chancode = "MC2", label = "Vault O/P Current", function = "" }, 
-    { oid = "1.3.6.1.4.1.45621.2.2.11.0", chancode = "MC3", label = "Shunt Battery Current", function = "" },
-    { oid = "1.3.6.1.4.1.45621.2.2.12.0", chancode = "MC4", label = "Not Used", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.11.0", chancode = "MC3", label = "Not Used", function = "" },
+    { oid = "1.3.6.1.4.1.45621.2.2.12.0", chancode = "MC4", label = "Shunt Battery Current", function = "" },
 ]
 temps = [
     { oid = "1.3.6.1.4.1.45621.2.2.13.0", chancode = "TPE", label = "Temp (Int)", function = "" },
